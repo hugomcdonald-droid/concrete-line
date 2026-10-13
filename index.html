@@ -94,7 +94,7 @@ body.rp .hud:not(.rpui):not(#pop){display:none}
 <div id="menu"><div class="sheet">
 <h1>CONCRETE<br><span>LINE</span></h1>
 <p class="sub">Halden University — one huge open campus on a 70&nbsp;m hill. Bomb College Hill, ride the canal into the reservoir, drop the mega ramp. Everything is skateable. Pick a spot to start.</p>
-<div class="opts"><button id="stance" class="opt" aria-label="Toggle stance between regular and goofy">Stance: <b>Regular</b></button><button id="meatT" class="opt" aria-pressed="false">Hall of Meat: <b>Off</b></button><button id="snd" class="opt" aria-pressed="true">Sound: <b>On</b></button><button id="camB" class="opt" aria-label="Cycle camera">Camera: <b>Low</b></button><button id="blurB" class="opt" aria-pressed="true">Speed blur: <b>On</b></button></div>
+<div class="opts"><button id="stance" class="opt" aria-label="Toggle stance between regular and goofy">Stance: <b>Regular</b></button><button id="meatT" class="opt" aria-pressed="false">Hall of Meat: <b>Off</b></button><button id="gfxB" class="opt" aria-pressed="true">Graphics: <b>High</b></button><button id="snd" class="opt" aria-pressed="true">Sound: <b>On</b></button><button id="camB" class="opt" aria-label="Cycle camera">Camera: <b>Low</b></button><button id="blurB" class="opt" aria-pressed="true">Speed blur: <b>On</b></button></div>
 <div id="spots"></div>
 <div class="ctl">
 <div><kbd>W</kbd>push (one kick each, hold to keep pushing, slow uphill) · tuck at speed (calms wobbles)</div><div><kbd>S</kbd>foot brake &nbsp;<kbd>A</kbd><kbd>D</kbd>steer / spin</div>
@@ -193,7 +193,7 @@ roof:ctex((g,s)=>{noise(g,s,'#5d5f62',.35,15000);g.strokeStyle='rgba(30,30,30,.4
 brick:ctex((g,s)=>{g.fillStyle='#6d3a2c';g.fillRect(0,0,s,s);for(let y=0;y<16;y++)for(let x=0;x<8;x++){g.fillStyle=`hsl(12,${40+Math.random()*15}%,${30+Math.random()*10}%)`;g.fillRect(x*32+(y%2)*16+1,y*16+1,30,14)}}),
 windows:ctex((g,s)=>{g.fillStyle='#8d8a82';g.fillRect(0,0,s,s);for(let y=0;y<8;y++)for(let x=0;x<8;x++){g.fillStyle=Math.random()<.2?`hsl(40,70%,${60+Math.random()*15}%)`:'#2a3340';g.fillRect(x*32+6,y*32+6,20,20)}}),
 };
-const {TXN,TNN}=makeTextures();Object.assign(TX,TXN);const TN=TNN;
+const {TXN,TNN}=makeTextures();Object.assign(TX,TXN);const TN=TNN;TX.pavers=TX.concrete.clone();TN.pavers=TN.concrete.clone();TX.pavers.needsUpdate=TN.pavers.needsUpdate=true;
 function facade(wall,trim,glass,kind){return ctex((g,s)=>{noise(g,s,wall,.22,9000);
  if(kind==='brick')for(let y=0;y<64;y++)for(let x=0;x<17;x++){g.fillStyle=`hsla(10,${35+Math.random()*20}%,${26+Math.random()*12}%,.6)`;g.fillRect(x*16-(y%2)*8,y*4,15,3)}
  const fl=s/2,pane=(x,y,w,h)=>{const gr=g.createLinearGradient(x,y,x+w*.6,y+h);gr.addColorStop(0,glass);gr.addColorStop(.45,'#a7bccb');gr.addColorStop(.55,glass);gr.addColorStop(1,'#1c2630');g.fillStyle=gr;g.fillRect(x,y,w,h)};
@@ -211,10 +211,48 @@ leaf:new T.MeshStandardMaterial({color:0x2f5a2c,roughness:1}),trunk:new T.MeshSt
 // draped surfaces sit on the terrain; polygon offset stops z-fighting
 for(const k of['concrete','pool','road','grass','asphalt','wood']){const n=k==='grass'?.45:k==='pool'?.5:.9;Object.assign(M[k],{normalMap:TN[k],normalScale:new T.Vector2(n,n)})}
 M.graff=std(TX.graff,.9,{normalMap:TN.graff});M.stucco=std(facade('#d8ccb2','#efe8da','#2c3a48','plain'),.9);M.poolV=std(TX.pool,.7,{vertexColors:true,normalMap:TN.pool,normalScale:new T.Vector2(.5,.5)});M.coping=std(TX.concrete,.8,{color:0xe9e4d8,normalMap:TN.concrete});
+M.pavers=std(TX.pavers,.9,{normalMap:TN.pavers,normalScale:new T.Vector2(.9,.9)});
 ['brick','win','glass','stone','stucco'].forEach(k=>M[k].userData.fac=true);M.grass.vertexColors=true;
 const OFF=m=>{const c=m.clone();c.polygonOffset=true;c.polygonOffsetFactor=-2;c.polygonOffsetUnits=-2;return c};
 const MO={road:OFF(M.road),concrete:OFF(M.concrete)};
 const DS=m=>m.userData.ds||(m.userData.ds=Object.assign(m.clone(),{side:T.DoubleSide}));
+
+
+// ---------- photo-scanned surfaces (ambientCG, CC0) and image-based light from a real sky (Poly Haven, CC0) ----------
+// They load from textures/ next to the page and replace the procedural maps in place, so every material that shares a map updates.
+// Without the files (offline, a missing folder) the procedural textures stay and the game plays the same.
+const PHOTO='textures/',RMAP={};
+const loadImg=src=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=()=>rej(src);im.src=src});
+function canvasOf(s,draw){const c=document.createElement('canvas');c.width=c.height=s;draw(c.getContext('2d'),s);return c}
+const tile2=(im,g,s)=>{const h=s*im.height/im.width;for(let y=0;y<s;y+=h)g.drawImage(im,0,y,s,h)};   // 1024x512 photos tile twice to fill a square
+function linTex(c){const t=new T.CanvasTexture(c);t.wrapS=t.wrapT=T.RepeatWrapping;t.anisotropy=TX.concrete.anisotropy;return t}
+function swap(t,c){t.image=c;t.needsUpdate=true}
+async function photoTextures(){let I;try{I=Object.fromEntries(await Promise.all(['concrete_col','concrete_nrm','concrete_rgh','asphalt_col','asphalt_nrm','asphalt_rgh','pavers_col','pavers_nrm','pavers_rgh','wood_col','wood_nrm','wood_rgh'].map(n=>loadImg(PHOTO+n+'.jpg').then(im=>[n,im]))))}catch(e){return}
+ const dummy=document.createElement('canvas').getContext('2d');
+ // sidewalk concrete: the photo, warmed a touch, with sawn joints on a 4 m slab, stains, a crack and skate marks
+ swap(TX.concrete,canvasOf(1024,(g,s)=>{tile2(I.concrete_col,g,s);g.globalCompositeOperation='multiply';g.fillStyle='rgb(196,190,178)';g.fillRect(0,0,s,s);g.globalCompositeOperation='source-over';
+  g.fillStyle='rgba(38,35,30,.6)';g.fillRect(0,0,s,3);g.fillRect(0,s-3,s,3);g.fillRect(0,0,3,s);g.fillRect(s-3,0,3,s);g.fillStyle='rgba(255,255,255,.14)';g.fillRect(0,4,s,2);g.fillRect(4,0,2,s);
+  for(let i=0;i<3;i++)blot(g,s,Math.random()*s,Math.random()*s,30+Math.random()*90,`rgba(60,52,44,${.08+Math.random()*.12})`);crack(g,dummy,s,Math.random()*s,Math.random()*s,16);skidMarks(g,s,12,.16)}));
+ swap(TN.concrete,canvasOf(1024,(g,s)=>tile2(I.concrete_nrm,g,s)));RMAP.concrete=linTex(canvasOf(1024,(g,s)=>tile2(I.concrete_rgh,g,s)));
+ // pool plaster: the same concrete, lightened and cooled
+ swap(TX.pool,canvasOf(1024,(g,s)=>{tile2(I.concrete_col,g,s);g.globalCompositeOperation='multiply';g.fillStyle='rgb(222,228,230)';g.fillRect(0,0,s,s);g.globalCompositeOperation='source-over';for(let i=0;i<4;i++)blot(g,s,Math.random()*s,Math.random()*s,40+Math.random()*80,'rgba(95,88,70,.1)');skidMarks(g,s,22,.2)}));
+ swap(TN.pool,TN.concrete.image);RMAP.pool=RMAP.concrete;
+ // asphalt and road surface: one 4 m tile of aggregate; lane lines are their own meshes
+ const asph=canvasOf(1024,(g,s)=>{g.drawImage(I.asphalt_col,0,0,s,s);g.globalCompositeOperation='multiply';g.fillStyle='rgb(150,150,156)';g.fillRect(0,0,s,s);g.globalCompositeOperation='source-over';skidMarks(g,s,6,.12)});
+ swap(TX.asphalt,asph);swap(TX.road,asph);const an=canvasOf(1024,(g,s)=>g.drawImage(I.asphalt_nrm,0,0,s,s));swap(TN.asphalt,an);swap(TN.road,an);RMAP.asphalt=RMAP.road=linTex(canvasOf(1024,(g,s)=>g.drawImage(I.asphalt_rgh,0,0,s,s)));
+ // plywood: the scanned grain mapped onto birch-ply tones, 1.2 x 2.4 m sheets, screws, wax and board scuffs
+ swap(TX.wood,canvasOf(1024,(g,s)=>{g.drawImage(I.wood_col,0,0,s,s);const d=g.getImageData(0,0,s,s),a=d.data;let m=0;for(let i=0;i<a.length;i+=4)m+=a[i]+a[i+1]+a[i+2];m/=a.length*.75;
+  for(let i=0;i<a.length;i+=4){const v=.8+.9*((a[i]+a[i+1]+a[i+2])/3-m)/255;a[i]=208*v;a[i+1]=171*v;a[i+2]=124*v}g.putImageData(d,0,0);
+  g.fillStyle='rgba(60,40,20,.55)';const sw=s*.3,sh=s*.6;for(let x=0;x<=s;x+=sw)g.fillRect(x-1,0,2,s);for(let y=0;y<=s;y+=sh)g.fillRect(0,y-1,s,2);
+  g.fillStyle='rgba(40,30,20,.7)';for(let x=8;x<s;x+=sw/4)for(let y=10;y<s;y+=48)g.fillRect(x,y,2,2);skidMarks(g,s,30,.3)}));
+ swap(TN.wood,canvasOf(1024,(g,s)=>g.drawImage(I.wood_nrm,0,0,s,s)));RMAP.wood=linTex(canvasOf(1024,(g,s)=>g.drawImage(I.wood_rgh,0,0,s,s)));
+ // plaza pavers
+ swap(TX.pavers,canvasOf(1024,(g,s)=>{g.drawImage(I.pavers_col,0,0,s,s);g.globalCompositeOperation='multiply';g.fillStyle='rgb(214,206,196)';g.fillRect(0,0,s,s);g.globalCompositeOperation='source-over';skidMarks(g,s,10,.14)}));
+ swap(TN.pavers,canvasOf(1024,(g,s)=>g.drawImage(I.pavers_nrm,0,0,s,s)));RMAP.pavers=linTex(canvasOf(1024,(g,s)=>g.drawImage(I.pavers_rgh,0,0,s,s)));
+ const bykey=new Map([[TX.concrete,'concrete'],[TX.pool,'pool'],[TX.asphalt,'asphalt'],[TX.road,'road'],[TX.wood,'wood'],[TX.pavers,'pavers']]);
+ scene.traverse(o=>{if(!o.material)return;for(const m of[].concat(o.material)){const k=m.map&&bykey.get(m.map);if(k&&RMAP[k]&&m.roughnessMap!==RMAP[k]){m.roughnessMap=RMAP[k];m.roughness=Math.min(1,m.roughness+.05);m.envMapIntensity=.55;m.needsUpdate=true}}})}
+function skyLight(){loadImg(PHOTO+'sky_env.jpg').then(im=>{const t=new T.Texture(im);t.mapping=T.EquirectangularReflectionMapping;t.encoding=T.sRGBEncoding;t.needsUpdate=true;
+ const pm=new T.PMREMGenerator(R);scene.environment=pm.fromEquirectangular(t).texture;t.dispose();pm.dispose();hemi.intensity=.22;R.toneMappingExposure=.95}).catch(()=>{})}
 
 // ---------- sky + light ----------
 const skyU={top:{value:new T.Color(0x3a7fd8)},hor:{value:new T.Color(0xc8dff0)},sunCol:{value:new T.Color(0xfff1c8)},sunDir:{value:new T.Vector3(.4,.55,.35)}};
@@ -222,7 +260,7 @@ const sky=new T.Mesh(new T.SphereGeometry(4000,32,16),new T.ShaderMaterial({side
 vertexShader:'varying vec3 vP;void main(){vP=normalize(position);gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}',
 fragmentShader:'uniform vec3 top,hor,sunCol,sunDir;varying vec3 vP;float hs(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}float ns(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(hs(i),hs(i+vec2(1,0)),f.x),mix(hs(i+vec2(0,1)),hs(i+vec2(1,1)),f.x),f.y);}float fbm(vec2 p){float v=0.,a=.5;for(int i=0;i<5;i++){v+=a*ns(p);p*=2.03;a*=.5;}return v;}void main(){float h=max(vP.y,0.);vec3 c=mix(hor,top,pow(h,.55));float s=max(dot(vP,normalize(sunDir)),0.);c+=sunCol*(pow(s,600.)*3.+pow(s,10.)*.45);if(vP.y>0.){float cl=smoothstep(.52,.78,fbm(vP.xz/(vP.y+.12)*1.4+3.));c=mix(c,vec3(.97,.97,.98)-vec3(.12)*cl,cl*.9*smoothstep(0.,.18,vP.y));}if(vP.y<0.)c=hor*mix(1.,.55,min(-vP.y*4.,1.));gl_FragColor=vec4(c,1.);}'}));
 scene.add(sky);
-const hemi=new T.HemisphereLight(0xc4d8ee,0x6a5c48,.5),sun=new T.DirectionalLight(0xffe8cc,1.55);
+const hemi=new T.HemisphereLight(0xc4d8ee,0x6a5c48,.5),sun=new T.DirectionalLight(0xffe6c4,1.7);
 sun.castShadow=true;sun.shadow.mapSize.set(4096,4096);Object.assign(sun.shadow.camera,{left:-45,right:45,top:45,bottom:-45,near:1,far:320});sun.shadow.bias=-.0005;
 scene.add(hemi,sun,sun.target);scene.fog=new T.Fog(0xc9dbea,320,2600);
 const sunOff=new T.Vector3(.4,.55,.35).normalize().multiplyScalar(140);
@@ -405,9 +443,14 @@ function surfAt(x,z,o){if(o)return o.k||'concrete';const i=Math.floor((x-WX0)/2)
  for(const L of LOTS)if(L.k==='yard'&&L.i%3!==2){const cz=(L.z0+L.z1)/2,px=L.side>0?L.x1-11:L.x0+11;L.pool=addPool({s:SH[n%8],x:px,z:cz,a:PI/2,L:13+(n%3),Wd:7.5,d0:1.3,d1:3.1-(n%2)*.4});n++}
  addPool({s:'combi',x:660,z:716,a:0,L:26,Wd:14,d0:2.2,d1:3.6})}
 function ribbon(rd){const P=rd.p,n=P.length,pos=new Float32Array(n*6),uv=new Float32Array(n*4),I=[];
- P.forEach((q,i)=>{for(let s=0;s<2;s++){const o=s?rd.hw:-rd.hw,x=q.x+q.dz*o,z=q.z-q.dx*o,k=i*2+s;pos[k*3]=x;pos[k*3+1]=base(x,z)+.07;pos[k*3+2]=z;uv[k*2]=s;uv[k*2+1]=q.s/16}if(i)I.push(i*2-2,i*2-1,i*2,i*2-1,i*2+1,i*2)});
+ P.forEach((q,i)=>{for(let s=0;s<2;s++){const o=s?rd.hw:-rd.hw,x=q.x+q.dz*o,z=q.z-q.dx*o,k=i*2+s;pos[k*3]=x;pos[k*3+1]=base(x,z)+.07;pos[k*3+2]=z;uv[k*2]=s*rd.hw/2;uv[k*2+1]=q.s/4}if(i)I.push(i*2-2,i*2-1,i*2,i*2-1,i*2+1,i*2)});
  const g=new T.BufferGeometry();g.setAttribute('position',new T.BufferAttribute(pos,3));g.setAttribute('uv',new T.BufferAttribute(uv,2));g.setIndex(I);g.computeVertexNormals();
- const m=new T.Mesh(g,DS(MO.road));m.receiveShadow=true;G.add(m);W.rib.push(rd)}
+ const m=new T.Mesh(g,DS(MO.road));m.receiveShadow=true;G.add(m);W.rib.push(rd);laneLines(rd)}
+// painted lines: dashed double yellow down the middle, solid white edges, laid just above the road
+const LINEY=new T.MeshStandardMaterial({color:0xd9b23c,roughness:.55,polygonOffset:true,polygonOffsetFactor:-4,polygonOffsetUnits:-4}),LINEW=LINEY.clone();LINEW.color.set(0xe6e4dc);
+function laneLines(rd){const P=rd.p;for(const [mat,offs,dash] of[[LINEY,[-.14,.14],1],[LINEW,[-rd.hw+.45,rd.hw-.45],0]]){const pos=[],I=[];let k=0;
+ for(const o of offs)for(let i=0;i<P.length-1;i++){const a=P[i],b=P[i+1];if(dash&&((a.s%12)>5))continue;for(const q of[a,b])for(const w of[-.06,.06]){const x=q.x+q.dz*(o+w),z=q.z-q.dx*(o+w);pos.push(x,base(x,z)+.085,z)}I.push(k,k+1,k+2,k+1,k+3,k+2);k+=4}
+ const g=new T.BufferGeometry();g.setAttribute('position',new T.Float32BufferAttribute(pos,3));g.setIndex(I);g.computeVertexNormals();const m=new T.Mesh(g,DS(mat));m.receiveShadow=true;G.add(m)}}
 // steel guardrail along one side of a road: grindable top edge every 24 m, one merged W-beam mesh, posts in the shared instanced set
 function guardrail(rd,side,i0,i1){const P=rd.p,o=(rd.hw+1)*side,pos=[],I=[];let k=0;
  for(let i=i0;i<=i1;i++){const q=P[i],x=q.x+q.dz*o,z=q.z-q.dx*o,b=base(x,z);pos.push(x,b+.5,z,x,b+.82,z);if(k)I.push(k*2-2,k*2-1,k*2,k*2-1,k*2+1,k*2);k++}
@@ -428,7 +471,7 @@ function house(L){const cz=(L.z0+L.z1)/2,hx=L.side>0?L.x0+8:L.x1-8,b=box(hx,cz,1
  // driveway to the road, hedges down the lot sides
  const rx=L.side>0?L.x0-22:L.x1+22;sheet(Math.min(rx,hx),cz+4,Math.max(rx,hx),cz+9,2,MO.concrete,.06,undefined,null,'#8a877f');
  for(let z=L.z0;z<=L.z1;z+=2.4){W.shrubs.push([L.x0-1,base(L.x0-1,z),z,1.1],[L.x1+1,base(L.x1+1,z),z,1.1])}}
-function civic(L){const y=0,cx=530;
+function civic(L){const y=0,cx=530;sheet(466,396,594,524,4,OFF(M.pavers),.075,undefined,null,'#a0948a');
  box(cx,416,100,24,2.4,M.concrete);stairs(cx,428,20,2.4);                                     // upper plaza and the six-stair
  for(const hx of[cx-11.2,cx+11.2]){ramp(hx,430.4,.9,4.8,1.9,PI,'lin',M.concrete,.5);rail(hx,428,hx,432.8,2.4,.5,false,false);W.rails[W.rails.length-1].k='ledge'}  // hubbas
  ramp(476,416,24,8,2.4,PI/2,'lin',M.concrete);                                                   // bank up to the plaza
@@ -479,7 +522,7 @@ function build(){
  sheet(-140,-335,-120,315,1,M.pool,0,undefined,null,'#b4b1a8');sheet(-180,315,-80,410,1,M.pool,0,undefined,null,'#b4b1a8');
 
  // College Hill: main road from the upper quad to the lower quad, rails both sides, kickers in the lanes
- sheet(-8,-268,8,212,4,MO.road,.06,(x,z)=>[(x+8)/16,z/16],null,'#3a3b40');
+ sheet(-8,-268,8,212,4,MO.road,.06,(x,z)=>[x/4,z/4],null,'#3a3b40');{const p=[];for(let z=-268;z<=212;z+=3)p.push({x:0,z,y:0,s:z+268,dx:0,dz:1});laneLines({p,hw:8})}
  // raised sidewalks: 15 cm curbs (ollie up or trip), curb cuts at both ends, grindable curb edges
  sheet(-12,-266,-8,210,4,MO.concrete,.21,undefined,null,'#8a877f');sheet(8,-266,12,210,4,MO.concrete,.21,undefined,null,'#8a877f');
  for(const sx of[-1,1]){pad(sx>0?8:-12,-266,sx>0?12:-8,210,.15);curbFace(sx*8,-266,210,.21);curbFace(sx*12,-266,210,.21);
@@ -1346,11 +1389,11 @@ function filmCam(dt,tx,ty,tz){const air=P.mode==='ride'&&!P.ground&&!P.grind&&!P
  cam.lookAt(FM.l)}
 
 // ---------- post pass: speed blur (radial taps, vignette, colour fringe) and the filmer's fisheye (barrel, 4:3 frame, grain). Off when neither is needed ----------
-let BLUR=true;try{BLUR=localStorage.getItem('cl_blur')!=='0'}catch(e){}
-const PPU={tD:{value:null},amt:{value:0},fish:{value:0},asp:{value:1},tm:{value:0}},ppS=new T.Scene(),ppC=new T.OrthographicCamera(-1,1,1,-1,0,1),_v2=new T.Vector2();let ppRT=null;
+let BLUR=true,GFX=true;try{BLUR=localStorage.getItem('cl_blur')!=='0';GFX=localStorage.getItem('cl_gfx')!=='0'}catch(e){}
+const PPU={tD:{value:null},amt:{value:0},fish:{value:0},asp:{value:1},tm:{value:0},gr:{value:0}},ppS=new T.Scene(),ppC=new T.OrthographicCamera(-1,1,1,-1,0,1),_v2=new T.Vector2();let ppRT=null;
 {const m=new T.Mesh(new T.PlaneGeometry(2,2),new T.ShaderMaterial({uniforms:PPU,depthTest:false,depthWrite:false,
  vertexShader:'varying vec2 vU;void main(){vU=uv;gl_Position=vec4(position.xy,0.,1.);}',
- fragmentShader:'uniform sampler2D tD;uniform float amt,fish,asp,tm;varying vec2 vU;float hs(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}'+
+ fragmentShader:'uniform sampler2D tD;uniform float amt,fish,asp,tm,gr;varying vec2 vU;float hs(vec2 p){return fract(sin(dot(p,vec2(12.9898,78.233)))*43758.5453);}'+
  'void main(){vec2 uv=vU;float vg=0.;vec3 col;'+
  'if(fish>.5){vec2 k=(vU-.5)*2.;if(asp>1.3333)k.x*=asp/1.3333;else k.y*=1.3333/asp;if(abs(k.x)>1.||abs(k.y)>1.){gl_FragColor=vec4(0.,0.,0.,1.);return;}'+   // 4:3 window
  'float r2=dot(k,k);uv=.5+k*(.7+.18*r2)*.5;if(uv.x<0.||uv.x>1.||uv.y<0.||uv.y>1.){gl_FragColor=vec4(0.,0.,0.,1.);return;}vg=.16*r2;}'+   // barrel: corners fall off into black
@@ -1358,11 +1401,13 @@ const PPU={tD:{value:null},amt:{value:0},fish:{value:0},asp:{value:1},tm:{value:
  'col.r=mix(col.r,texture2D(tD,.5+c*(1.+amt*.25)).r,.5);col.b=mix(col.b,texture2D(tD,.5+c*(1.-amt*.25)).b,.5);vg+=amt*14.*dot(c,c);}'+
  'else col=texture2D(tD,uv).rgb;'+
  'if(fish>.5){col=mix(vec3(dot(col,vec3(.299,.587,.114))),col,.85);col+=(hs(vU*vec2(997.,613.)+fract(tm))-.5)*.12;}'+
+ 'if(gr>.5){float l=dot(col,vec3(.2126,.7152,.0722));col=mix(vec3(l),col,1.1);col=(col-.5)*1.07+.5;col*=vec3(1.025,1.,.955);col=max(col,0.);vg+=.32*dot(c,c);}'+   // grade: a little saturation and contrast, warm, soft vignette
  'gl_FragColor=vec4(col*(1.-min(vg,.85)),1.);}'}));m.frustumCulled=false;ppS.add(m)}
 function ppSize(){if(ppRT){R.getDrawingBufferSize(_v2);ppRT.setSize(_v2.x,_v2.y)}}
-function render(){PPU.asp.value=innerWidth/innerHeight;if(PPU.fish.value<.5&&PPU.amt.value<.001){R.render(scene,cam);return}
+function render(){PPU.asp.value=innerWidth/innerHeight;PPU.gr.value=GFX?1:0;if(!GFX&&PPU.fish.value<.5&&PPU.amt.value<.001){R.render(scene,cam);return}
  if(!ppRT){R.getDrawingBufferSize(_v2);ppRT=R.capabilities.isWebGL2?new T.WebGLMultisampleRenderTarget(_v2.x,_v2.y):new T.WebGLRenderTarget(_v2.x,_v2.y);ppRT.texture.encoding=T.sRGBEncoding}   // the scene encodes to sRGB in the target, the quad copies it straight out
  PPU.tm.value=clk*7.31;R.setRenderTarget(ppRT);R.render(scene,cam);R.setRenderTarget(null);PPU.tD.value=ppRT.texture;R.render(ppS,ppC)}
+function setGfx(v){GFX=v;try{localStorage.setItem('cl_gfx',v?'1':'0')}catch(e){}R.shadowMap.enabled=v;scene.traverse(o=>{if(o.material)for(const m of[].concat(o.material))m.needsUpdate=true});const b=$('gfxB');if(b){b.innerHTML='Graphics: <b>'+(v?'High':'Low')+'</b>';b.setAttribute('aria-pressed',v)}}
 function setBlur(v){BLUR=v;try{localStorage.setItem('cl_blur',v?'1':'0')}catch(e){}const b=$('blurB');b.innerHTML='Speed blur: <b>'+(v?'On':'Off')+'</b>';b.setAttribute('aria-pressed',v)}
 
 // ---------- replay editor + photo mode: the last 20 s at 30 Hz ----------
@@ -1612,7 +1657,7 @@ $('meatT').onclick=()=>setMeat(!meatOn);setMeat(meatOn);
 const spotsEl=$('spots');SPOTS.forEach((s,i)=>{const b=document.createElement('button');b.className='card';b.id='spot'+i;b.innerHTML=`<b>${s[0]}</b><i>${s[1]}</i>`;b.onclick=()=>{spot=i;clearMarker();respawn();acc=0;toggleMenu(false)};spotsEl.append(b)});
 function toggleMenu(show){if(RPL)replayClose();paused=show;$('menu').hidden=!show;for(const k in K)K[k]=false;for(const k in GPV)GPV[k]=false;P.charging=false;P.fp=null;if(show)$('spot'+spot).focus()}
 $('stance').onclick=()=>setGoofy(!P.goofy);setGoofy(P.goofy);$('snd').onclick=()=>setSnd(!SND);setSnd(SND);
-$('camB').onclick=()=>setCam((camMode+1)%CAMS.length);setCam(camMode);$('blurB').onclick=()=>setBlur(!BLUR);setBlur(BLUR);
-build();drawMiniBase();respawn();requestAnimationFrame(frame);
+$('camB').onclick=()=>setCam((camMode+1)%CAMS.length);setCam(camMode);$('blurB').onclick=()=>setBlur(!BLUR);setBlur(BLUR);$('gfxB').onclick=()=>setGfx(!GFX);setGfx(GFX);
+build();photoTextures();skyLight();drawMiniBase();respawn();requestAnimationFrame(frame);
 </script>
 </body></html>
