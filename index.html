@@ -51,6 +51,7 @@ h1 span{color:var(--ac)}
 .opt b{color:var(--ac);font-weight:600}
 .opt:hover,.opt:focus-visible{border-color:var(--ac);color:var(--fg)}
 .opt:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.opt[hidden]{display:none}
 #stn{margin-top:2px}
 .opts{display:flex;flex-wrap:wrap;gap:8px}
 #combo.meat #cval{color:#ff5a6a}
@@ -76,7 +77,22 @@ body.rp .hud:not(.rpui):not(#pop){display:none}
 #rpio{position:absolute;top:0;bottom:0;background:rgba(255,178,31,.35);border-radius:3px}
 #rph{position:absolute;top:-4px;width:3px;height:14px;margin-left:-1.5px;background:var(--fg);border-radius:1px}
 #rpk{line-height:1.5}
-@media (max-width:600px){#keys{display:none}#mini{width:120px;height:120px}}
+/* modes: the status line top centre, board-sale toasts under the speed; menu sections, medals, the spot book, stats and shop swatches */
+#mode{left:50%;top:calc(14px + env(safe-area-inset-top,0px));transform:translateX(-50%);background:var(--panel);border:1px solid var(--line);padding:6px 14px 7px;font-size:12px;text-align:center;max-width:min(calc(100vw - 32px),620px)}
+#mode[hidden]{display:none}#modeT{display:block;font-family:var(--f-d);font-weight:400;font-size:15px;letter-spacing:.03em;color:var(--ac)}#modeS{color:var(--fg)}
+#toast{right:16px;top:calc(86px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;align-items:flex-end;gap:3px;font-size:12px;font-weight:600;color:var(--ac)}
+#toast div{background:var(--panel);border:1px solid var(--line);padding:3px 9px;animation:tin .25s ease-out backwards}
+.sheet h2{font-family:var(--f-d);font-weight:400;font-size:21px;margin:28px 0 10px;letter-spacing:.02em}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}#races{margin-top:10px}
+.card .md{color:var(--fg);opacity:.85}.card.st{cursor:default}.card.st:hover{transform:none;border-color:var(--line)}
+.prog{display:flex;align-items:center;gap:12px;margin:14px 0 0;font-size:11px;color:var(--mut);letter-spacing:.08em;text-transform:uppercase}
+.prog i{flex:0 1 260px;height:6px;background:var(--line);border-radius:3px;overflow:hidden}.prog b{display:block;height:100%;background:var(--ac);transform-origin:left center}
+#stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px 18px;font-size:11px;color:var(--mut);letter-spacing:.06em;text-transform:uppercase}
+#stats b{display:block;font-family:var(--f-d);font-weight:400;font-size:19px;letter-spacing:0;text-transform:none;color:var(--fg)}
+.slot{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px;font-size:11px;color:var(--mut);letter-spacing:.08em;text-transform:uppercase}.slot span{min-width:72px}
+.sw{all:unset;cursor:pointer;width:28px;height:28px;border:1px solid var(--line);border-radius:3px;background-size:cover;background-position:center}.sw.dk{width:16px;height:46px;border-radius:8px}
+.sw[aria-pressed=true]{outline:2px solid var(--ac);outline-offset:2px}.sw[aria-disabled=true]{opacity:.28;cursor:not-allowed}.sw:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
+@media (max-width:600px){#mode{top:calc(104px + env(safe-area-inset-top,0px))}#toast{top:calc(150px + env(safe-area-inset-top,0px))}#keys{display:none}#mini{width:120px;height:120px}}
 @media (prefers-reduced-motion:reduce){.card,#pop,#cgrade{transition:none}#ctricks .t{animation:none}}
 </style></head><body>
 
@@ -85,17 +101,30 @@ body.rp .hud:not(.rpui):not(#pop){display:none}
 <div id="combo" class="hud"><div id="ctricks"></div><div id="cval"></div><div id="ctimer" hidden><b></b></div><div id="cgrade"></div><div id="bal" hidden><span id="balL">A</span><i><b id="balN"></b></i><span id="balR">D</span></div></div>
 <div id="pop" class="hud"></div>
 <div id="hint" class="hud" hidden></div>
+<div id="mode" class="hud" hidden><span id="modeT"></span><span id="modeS"></span></div>
+<div id="toast" class="hud" aria-live="polite"></div>
 <div id="meat" class="hud" hidden><canvas id="meatC" width="120" height="160" aria-label="Injury diagram"></canvas><div><div class="u">Hall of Meat</div><div id="meatS"></div><div id="meatB"></div><div id="meatX"></div></div></div>
-<div id="keys" class="hud">W push / pump / tuck · S brake · S+A/D slide · A/D steer · Space ollie · Q nollie · X revert / body varial · J K L I flips (chords, tap again = double) · U O grabs (+W/S) · C no-comply · V boneless · A/D in air spins · Shift manual (W/S balance, W+Shift nose) · Shift+A/D slow: kickturn · rails: S W J K L grinds, A/D balance · coping: J K L I O lip tricks · walls: Space wallie, C wallplant · B bail (tumbling: Space tuck, W/S flip, A/D twist, Shift flail) · Space in the air: absorb a big drop · E off/on board · R reset · T marker · G go to marker · F camera · P replay · M spots · gamepad: right stick flicks tricks</div>
+<div id="keys" class="hud">W push / pump / tuck · S brake · S+A/D slide · A/D steer · Space ollie · Q nollie · X revert / body varial · J K L I flips (chords, tap again = double) · U O grabs (+W/S) · C no-comply · V boneless · A/D in air spins · Shift manual (W/S balance, W+Shift nose) · Shift+A/D slow: kickturn · rails: S W J K L grinds, A/D balance · coping: J K L I O lip tricks · walls: Space wallie, C wallplant · B bail (tumbling: Space tuck, W/S flip, A/D twist, Shift flail) · Space in the air: absorb a big drop · E off/on board · R reset · T marker · G go to marker · F camera · P replay · M menu · 1 challenge · 2 own the spot · 3 S.K.A.T.E. · 4 race · 5 deathrace · N on foot: object dropper · gamepad: right stick flicks tricks</div>
 <canvas id="mini" class="hud" width="200" height="200"></canvas>
 <div id="rpT" class="hud rpui rpbar" hidden></div><div id="rpB" class="hud rpui rpbar" hidden></div><div id="rpc" class="hud rpui" hidden></div>
 <div id="rp" class="hud rpui" hidden><div id="rpl"><b>REPLAY</b><span id="rpi"></span></div><div id="rpt"><i id="rpio"></i><b id="rph"></b></div><div class="u" id="rpk">A/D scrub · W/S speed · Space play/pause · F camera · [ ] in/out · Enter photo · E export .webm · P exit</div></div>
 
 <div id="menu"><div class="sheet">
 <h1>CONCRETE<br><span>LINE</span></h1>
+<div class="prog"><span id="progT"></span><i><b id="progB"></b></i></div>
 <p class="sub">Halden University — one huge open campus on a 70&nbsp;m hill. Bomb College Hill, ride the canal into the reservoir, drop the mega ramp. Everything is skateable. Pick a spot to start.</p>
 <div class="opts"><button id="stance" class="opt" aria-label="Toggle stance between regular and goofy">Stance: <b>Regular</b></button><button id="meatT" class="opt" aria-pressed="false">Hall of Meat: <b>Off</b></button><button id="gfxB" class="opt" aria-pressed="true">Graphics: <b>High</b></button><button id="snd" class="opt" aria-pressed="true">Sound: <b>On</b></button><button id="camB" class="opt" aria-label="Cycle camera">Camera: <b>Low</b></button><button id="blurB" class="opt" aria-pressed="true">Speed blur: <b>On</b></button></div>
 <div id="spots"></div>
+<h2>Modes</h2>
+<div class="opts"><button id="mOwn" class="opt">Own the Spot: <b></b></button><button id="mSk1" class="opt">S.K.A.T.E. <b>vs CPU</b></button><button id="mSk2" class="opt">S.K.A.T.E. <b>vs a friend</b></button><button id="mQuit" class="opt" hidden>Quit <b>mode</b></button><button id="mClr" class="opt">Clear dropped pieces: <b>0</b></button></div>
+<div id="races" class="grid"></div>
+<h2>Challenges</h2>
+<div id="chals" class="grid"></div>
+<h2>Spot Book</h2>
+<div id="book" class="grid"></div>
+<h2>Career</h2>
+<div id="stats"></div>
+<div id="shop"></div>
 <div class="ctl">
 <div><kbd>W</kbd>push (one kick each, hold to keep pushing, slow uphill) · tuck at speed (calms wobbles)</div><div><kbd>S</kbd>foot brake &nbsp;<kbd>A</kbd><kbd>D</kbd>steer / spin</div>
 <div><kbd>Space</kbd>hold + release to ollie &nbsp;<kbd>Q</kbd>nollie</div><div><kbd>J</kbd>kickflip <kbd>K</kbd>heelflip <kbd>L</kbd>shove-it <kbd>I</kbd>impossible</div>
@@ -116,6 +145,10 @@ body.rp .hud:not(.rpui):not(#pop){display:none}
 <div><kbd>P</kbd>replay the last 20 s: <kbd>A</kbd>/<kbd>D</kbd> scrub, <kbd>W</kbd>/<kbd>S</kbd> speed, <kbd>Space</kbd> play, <kbd>F</kbd> camera, <kbd>[</kbd> <kbd>]</kbd> in/out, <kbd>Enter</kbd> photo, <kbd>E</kbd> export .webm</div>
 <div>Gamepad: left stick steers. Right stick: pull back and flick up to ollie, flick to a diagonal to kickflip / heelflip, swing it round for a shove-it; in the air a flick is a late flip. A push · X brake · B manual · Y on/off · LB nollie · RB revert · triggers grab · View replay · L3 camera · D-pad marker / reset / bail</div>
 <div>No pad? Hold the right mouse button and drag: it works like the right stick</div>
+<div><kbd>1</kbd>at an amber marker: start its challenge (Am, Pro, Legend medals) &nbsp;<kbd>R</kbd>retry. The same digit quits a mode</div>
+<div><kbd>2</kbd>Own the Spot: 90 s, combos that end in the spot count &nbsp;<kbd>3</kbd>Game of S.K.A.T.E. on the lower quad</div><div><kbd>4</kbd>race the nearest gated downhill against your ghost &nbsp;<kbd>5</kbd>deathrace: any route, three rivals, bails cost you the walk</div>
+<div><kbd>N</kbd>on foot: object dropper. <kbd>[</kbd><kbd>]</kbd>piece <kbd>Z</kbd><kbd>X</kbd>rotate <kbd>Enter</kbd>place <kbd>Backspace</kbd>undo. Pieces are saved</div>
+<div>Named gaps add to the combo; a trick nobody has done over one is an NBD (double points) in your Spot Book. Medals, gaps, NBDs, races and slams sell boards: unlock decks, wheels and clothes. Grinds wear your deck</div>
 <div>Traffic drives every road: cars brake and honk when you're in their lane, you can ollie onto a roof and ride it, and they will run you over. Cones, bins and barricades go flying; shopping carts are heavy. Metal skatestoppers on a ledge throw you off the grind</div>
 </div></div></div>
 
@@ -400,11 +433,11 @@ function bake(){HG=new Float32Array(GNX*GNZ);for(let j=0;j<GNZ;j++)for(let i=0;i
 function base(x,z){return hgAt(x,z)-dip(x,z)-poolDip(x,z)}
 
 // ---------- world builders / colliders ----------
-let G,W;let hitBox=false,hitObj=null;
+let G,W;let hitBox=false,hitObj=null,DCAP=null;   // DCAP: the object dropper collects what a piece registers
 // surface kind of a material: decides rolling resistance, grip and whether you can ride it at all
 const matKind=m=>m.map===TX.crust?'crust':m.map===TX.pool?'pool':m.map===TX.road?'road':m.map===TX.asphalt?'asphalt':m.map===TX.wood?'wood':m.map===TX.grass?'grass':m===M.paint?'paint':'concrete';
 const add=m=>{m.castShadow=m.receiveShadow=true;G.add(m);return m};
-function reg(o,x0,z0,x1,z1){for(let i=Math.floor(x0/16);i<=Math.floor(x1/16);i++)for(let j=Math.floor(z0/16);j<=Math.floor(z1/16);j++){const k=i*1024+j;let c=W.grid.get(k);if(!c)W.grid.set(k,c=[]);c.push(o)}}
+function reg(o,x0,z0,x1,z1){for(let i=Math.floor(x0/16);i<=Math.floor(x1/16);i++)for(let j=Math.floor(z0/16);j<=Math.floor(z1/16);j++){const k=i*1024+j;let c=W.grid.get(k);if(!c)W.grid.set(k,c=[]);c.push(o);if(DCAP)DCAP.push([W.grid,k,o])}}
 function boxGeo(w,h,d,k=4){const g=new T.BoxGeometry(w,h,d),uv=g.attributes.uv,D=[[d,h],[d,h],[w,d],[w,d],[w,h],[w,h]];for(let f=0;f<6;f++)for(let j=0;j<4;j++){const i=f*4+j;uv.setXY(i,uv.getX(i)*D[f][0]/k,uv.getY(i)*D[f][1]/k)}return g}
 function box(x,z,w,d,h,mat,col=true,nd=false){const top=base(x,z)+h;if(col)reg({t:0,x,z,w,d,top,k:matKind(mat)},x-w/2,z-d/2,x+w/2,z+d/2);
  const fac=mat.userData.fac,H=h+(fac?21:18),m=add(new T.Mesh(boxGeo(w,H,d,fac?7:4),fac?[mat,mat,M.roof,M.roof,mat,mat]:mat));m.position.set(x,top-H/2,z);W.mm.push([x-w/2,z-d/2,x+w/2,z+d/2,h>3?'#3a3d45':'#8a877f']);if(fac&&!nd)decorate(x,z,w,d,h,top,mat);return m}
@@ -427,7 +460,7 @@ const UP=new T.Vector3(0,1,0);
 // square and flat bars: a box laid along the rail with its top flush with the grind line
 function bar(x1,y1,z1,x2,y2,z2,w,h){const l=Math.hypot(x2-x1,y2-y1,z2-z1),m=add(new T.Mesh(new T.BoxGeometry(w,h,l),M.metal));m.position.set((x1+x2)/2,(y1+y2)/2-h/2+.03,(z1+z2)/2);m.lookAt(x2,y2-h/2+.03,z2)}
 // rails live in a 16 m grid too, so grinding only checks the rails near you
-function regRail(r){for(let i=Math.floor((Math.min(r.x1,r.x2)-1.5)/16);i<=Math.floor((Math.max(r.x1,r.x2)+1.5)/16);i++)for(let j=Math.floor((Math.min(r.z1,r.z2)-1.5)/16);j<=Math.floor((Math.max(r.z1,r.z2)+1.5)/16);j++){const k=i*1024+j;let c=W.rg.get(k);if(!c)W.rg.set(k,c=[]);c.push(r)}}
+function regRail(r){for(let i=Math.floor((Math.min(r.x1,r.x2)-1.5)/16);i<=Math.floor((Math.max(r.x1,r.x2)+1.5)/16);i++)for(let j=Math.floor((Math.min(r.z1,r.z2)-1.5)/16);j<=Math.floor((Math.max(r.z1,r.z2)+1.5)/16);j++){const k=i*1024+j;let c=W.rg.get(k);if(!c)W.rg.set(k,c=[]);c.push(r);if(DCAP)DCAP.push([W.rg,k,r])}}
 const RAIL0=[];function railsNear(x,z){const c=W.rg.get(Math.floor(x/16)*1024+Math.floor(z/16));return c||RAIL0}
 function cyl(p1,p2,r,mat){const d=p2.clone().sub(p1),m=add(new T.Mesh(new T.CylinderGeometry(r,r,d.length(),10),mat));m.position.copy(p1).addScaledVector(d,.5);m.quaternion.setFromUnitVectors(UP,d.normalize())}
 function rail(x1,z1,x2,z2,h1,h2=h1,posts=true,vis=true,ty){const y1=base(x1,z1)+h1,y2=base(x2,z2)+h2,Lh=Math.hypot(x2-x1,z2-z1),L3=Math.hypot(Lh,y2-y1);
@@ -944,7 +977,7 @@ function build(){
  for(let i=0;i<16000&&tl.length<3800;i++){const out=i%5===0,x=out?WX0-300+Math.random()*(WX1-WX0+600):WX0+Math.random()*(WX1-WX0),z=out?WZ0-300+Math.random()*(WZ1-WZ0+600):WZ0+Math.random()*(WZ1-WZ0);
   if(!out&&(no.some(r=>x>r[0]&&x<r[2]&&z>r[1]&&z<r[3])||surfAt(x,z)!=='grass'||lotAt(x,z,2)||roadDist(x,z)<9))continue;if(dip(x,z)>0||poolDip(x,z)>0||topAt(x,z)-base(x,z)>.05)continue;tl.push([x,z,.8+Math.random()*.9])}
  trees(tl);
- decalsBuild();waxBuild();traffic();flushInst();
+ decalsBuild();waxBuild();traffic();flushInst();dropsLoad();   // your dropped pieces come back last
 }
 
 const SPOTS=[
@@ -988,10 +1021,11 @@ const BALLS=[[0,.11,SKIN],[6,.048,SKIN],[7,.048,SKIN],[2,.068,HOOD],[3,.068,HOOD
 const limbM=LIMBS.map(l=>{const m=new T.Mesh(cylG,l[3]);m.castShadow=true;scene.add(m);return m});
 const ballM=BALLS.map(b=>{const m=new T.Mesh(sphG,b[2]);m.scale.setScalar(b[1]);m.castShadow=true;scene.add(m);return m});
 const torso=new T.Mesh(boxG,HOOD),hips=new T.Mesh(boxG,PANTS),cap=new T.Mesh(new T.SphereGeometry(.118,14,8,0,PI*2,0,PI/2),CAP),brim=new T.Mesh(new T.BoxGeometry(.2,.015,.12),CAP);
-[torso,hips].forEach(m=>{m.castShadow=true;m.matrixAutoUpdate=false;scene.add(m)});cap.add(brim);brim.position.set(0,.01,.12);cap.castShadow=brim.castShadow=true;scene.add(cap);
+[torso,hips].forEach(m=>{m.castShadow=true;m.matrixAutoUpdate=false;scene.add(m)});cap.add(brim);brim.position.set(0,.01,.12);cap.castShadow=brim.castShadow=true;scene.add(cap);const RIG0={limb:limbM,ball:ballM,torso,hips,cap};
 const _a=new T.Vector3(),_b=new T.Vector3(),_c=new T.Vector3(),_u=new T.Vector3(),_r=new T.Vector3(),_f=new T.Vector3(),UPV=new T.Vector3(0,1,0),BX=new T.Vector3(1,0,0),BZ=new T.Vector3(0,0,1);
 function orient(m,c,u,rr,w,h,d){_r.copy(rr);_r.addScaledVector(u,-_r.dot(u)).normalize();_f.crossVectors(_r,u);m.matrix.makeBasis(_r.multiplyScalar(w),_b.copy(u).multiplyScalar(h),_f.multiplyScalar(d));m.matrix.setPosition(c)}
-function drawBody(wk=P.mode==='walk'){   // wk: walk-labelled joints (the replay passes the recorded mode)
+function drawBody(wk=P.mode==='walk'){drawRig(J,RIG0,wk)}   // wk: walk-labelled joints (the replay passes the recorded mode)
+function drawRig(J,rg,wk){const limbM=rg.limb,ballM=rg.ball,torso=rg.torso,hips=rg.hips,cap=rg.cap;   // the rider, or the race ghost
  LIMBS.forEach(([a,b,r],i)=>{const m=limbM[i];_a.subVectors(J[b],J[a]);const l=_a.length();m.position.addVectors(J[a],J[b]).multiplyScalar(.5);m.scale.set(r,l,r);if(l>1e-4)m.quaternion.setFromUnitVectors(UPV,_a.divideScalar(l))});
  BALLS.forEach(([j],i)=>ballM[i].position.copy(J[j]));
  _u.subVectors(J[1],J[8]);const tl=_u.length();_u.divideScalar(tl||1);
@@ -1083,10 +1117,12 @@ const TRK0={sw:false,nollie:false,airT:null,bv:null,fp:null,pin:false,bl:0,carry
 // push cycle time (null = feet on the board), psg its direction, pdv its kick; olQ an ollie waiting for the push foot; kt kickturn, ktT/ktD time since and side of the last one; pe end that popped (-1 tail, 1 nose); runT running it out
  push:null,psg:1,pdv:0,olQ:false,kt:null,ktT:9,ktD:0,pe:-1,runT:0,
 // noPop: a heavy landing blocks popping for a moment; absorb: Space held in the air soaks up a big drop
- noPop:0,absorb:false,car:null};   // car: the car you are riding on the roof of
+ noPop:0,absorb:false,car:null,tk:null,apex:0};   // tk: where the last air started, apex its top   // car: the car you are riding on the roof of
 let BW=0;   // balance windmill amount for the arms (grind or manual balance near the edge)
 let PA=false,DT=0,WSP=0,WRT=0;const POPT={Ollie:1,'No Comply':1,Boneless:1};const DK=[0,0,0,0],TU=[0,2,3,4,5,6,7];   // PA feet ride a posed board (pop, kickturn), DT deck tilt on its trucks, WSP/WRT wheel angle/spin rate
 const $=id=>document.getElementById(id);
+// events the modes, gaps and career listen to: land, bail, grind (distance), combo, trick, hom
+const EVH={};function onEv(e,f){(EVH[e]||(EVH[e]=[])).push(f)}function emit(e,d){const L=EVH[e];if(L)for(const f of L)f(d)}
 function respawn(){const [,,x,z,h]=SPOTS[spot];respawnAt(x,z,h)}
 function respawnAt(x,z,h){Object.assign(P,TRK0,{inj:{leg:0,arm:0},yr:0,rb:1,mode:'ride',x,z,y:topAt(x,z),head:h,spd:0,vy:0,ground:true,air:0,spin:0,charge:0,charging:false,flip:null,grind:null,gcd:0,manual:false,gT:0,pitch:0,sl:0,tuck:false,grab:0,lean:0,squash:0,ws:0,ph:0,upT:1,ragT:0,still:0},FEEL0);P.surf=surfAt(x,z,(topAt(x,z),hitObj));combo=[];cScore=0;camYaw=h;B.rail=null;B.rl=false;TS=1;slowT=0;camPunch=0;
  const C=CAMS[camMode],ch=Math.max(C.h,1),cd=camDist(x,P.y,z,C.d+1,ch);cam.position.set(x-Math.sin(h)*cd,P.y+ch+.4,z-Math.cos(h)*cd);look.set(x+Math.sin(h)*C.ahead,P.y+C.look,z+Math.cos(h)*C.ahead);
@@ -1101,17 +1137,17 @@ function pop(t,c='var(--fg)'){const e=$('pop');e.textContent=t;e.style.color=c;e
 // landing grade under the combo score (Bolts / Sketchy / Heavy)
 function grade(t,c){const e=$('cgrade');e.textContent=t;e.style.color=c;e.style.opacity=1;clearTimeout(grade.t);grade.t=setTimeout(()=>e.style.opacity=0,1000)}
 // repeats pay less: x.65 for every earlier use in this combo and the last two; the combo multiplier counts distinct tricks
-function trick(n,p){let k=0;for(const c of combo)if(c===n)k++;for(const h of HIST)for(const c of h)if(c===n)k++;combo.push(n);cScore+=p*.65**k;rlog(n,'var(--fg)')}
+function trick(n,p){let k=0;for(const c of combo)if(c===n)k++;for(const h of HIST)for(const c of h)if(c===n)k++;combo.push(n);cScore+=p*.65**k;rlog(n,'var(--fg)');emit('trick',{n,p})}
 function distinct(a){let d=0;for(let i=0;i<a.length;i++){let u=1;for(let j=0;j<i;j++)if(a[j]===a[i]){u=0;break}d+=u}return d}
-function endCombo(){if(!combo.length)return;const v=Math.round(cScore*distinct(combo));total+=v;pop('+'+v.toLocaleString(),'var(--ac)');rlog('+'+v.toLocaleString(),'var(--ac)');HIST.shift();HIST.push(combo);combo=[];cScore=0}
+function endCombo(){if(!combo.length)return;const v=Math.round(cScore*distinct(combo));total+=v;pop('+'+v.toLocaleString(),'var(--ac)');rlog('+'+v.toLocaleString(),'var(--ac)');HIST.shift();HIST.push(combo);combo=[];cScore=0;emit('combo',{v,x:P.x,z:P.z})}
 // ---------- stance + trick names ----------
 const rigRot=()=>P.goofy===P.sw;             // rig turned 180: left foot on the nose
 const stanceSign=()=>rigRot()?-1:1;          // local x the toes point to; +spin toward the toes' side is backside
 // stance of a pop: which foot pops (natural back/front) and whether it pops the leading end. Rolling off something: switch xor fakie
 function stanceAt(nose,popped){const fak=P.spd<-.3;if(!popped)return P.sw?(fak?'':'Switch'):(fak?'Fakie':'');const fr=P.sw!==nose,ld=nose!==fak;return fr?(ld?'Nollie':'Switch'):(ld?'Fakie':'')}
 const STM={'':1,Fakie:1.1,Nollie:1.25,Switch:1.4},POPP={Ollie:100,'No Comply':250,Boneless:300,Caveman:250,Wallie:350,Wallplant:400};
-function newAir(pop,st,vt){return{pop,st,vt:!!vt,ts:stanceSign(),fl:[],gr:null,gp:0,tw:false,bv:0}}
-const air=()=>P.airT||(P.airT=newAir(null,'',false));
+function newAir(pop,st,vt,lazy){if(!lazy){P.tk={x:P.x,z:P.z,y:P.y};P.apex=P.y}return{pop,st,vt:!!vt,ts:stanceSign(),fl:[],gr:null,gp:0,tw:false,bv:0}}
+const air=()=>P.airT||(P.airT=newAir(null,'',false,1));
 // one name per air: stance + FS/BS + rotation + flip + grab, with the classic rewrites (Half-Cab, Full Cab, Big Spin, vert airs)
 function airName(a,n){const deg=Math.abs(n)*180,side=n?(n*a.ts>0?'BS':'FS'):'';let st=a.st,fl=a.fl.map(f=>f.n).join(' + '),gr=a.gr?(a.tw&&a.gr.tw?a.gr.tw:a.gr.n):'',rt=n?side+' '+deg:'';
  let p=(POPP[a.pop]||0)+deg/180*350+a.gp+a.bv*250;for(const f of a.fl)p+=f.p;
@@ -1158,7 +1194,7 @@ const RUNK={trip:1,slip:1,sideways:1,slipout:1,primo:1};   // small mistakes tha
 // what went wrong on a landing: a flip short of done (board on its edge / upside down / turned across), a body varial, or over-rotation
 function bailKind(fp,r,bvA){if(fp<.8){flipQ(P.flip);const uy=_u.set(0,1,0).applyQuaternion(_q).y,fz=_f.set(0,0,1).applyQuaternion(_q).z;return Math.abs(uy)<.45?'primo':uy<-.45?'slipout':Math.abs(fz)<.7?'sideways':'trip'}
  return bvA?'sideways':Math.abs(r)>.6?'slip':'trip'}
-function bail(kind='trip',o){if(P.mode!=='ride')return;const g=P.grind,bk=BAILK[kind]||BAILK.trip,c=BC;
+function bail(kind='trip',o){if(P.mode!=='ride')return;emit('bail',{kind});const g=P.grind,bk=BAILK[kind]||BAILK.trip,c=BC;
  const f=c.f.set(Math.sin(P.head),0,Math.cos(P.head)),side=c.s.set(f.z,0,-f.x)
  ,sn=P.ground?P.sl/Math.sqrt(1+P.sl*P.sl):0,hs=P.ground?P.spd*Math.sqrt(1-sn*sn):P.spd,vy=P.ground?P.spd*sn:P.vy;
  const V=c.V.set(f.x*hs,vy,f.z*hs),sp=Math.abs(hs)+Math.abs(vy)*.5,ss=Math.random()<.5?-1:1;c.d.copy(f).multiplyScalar(hs<0?-1:1);Object.assign(c,{ss,gs:o&&o.side||1,sp,hs:Math.abs(hs)});
@@ -1349,7 +1385,7 @@ const grindKey=x=>{const h=c=>K[c]||x===c;return h('l')?(h('w')?'lw':h('s')?'ls'
 function gSet(g,key){const e=g.e=GRINDS[key];g.key=key;const ys=e.yw?e.yw*g.rsx*(e.ld&&g.fk?-1:1)*PI/2:0,tg=(g.fk?PI:0)+ys;g.yt=g.ya+wrap(tg-g.ya);
  return g.n=((g.rsx*stanceSign()>0)!==!!e.inv?'FS ':'BS ')+e.n}
 // leaving a rail: a fakie lock-on rolls away fakie again, and the board swings back in line
-function grindExit(g){if(g.fk){P.head+=PI;P.spd=-P.spd}P.vyw=wrap(g.ya-(g.fk?PI:0));P.grind=null}
+function grindExit(g){if(g.fk){P.head+=PI;P.spd=-P.spd}P.vyw=wrap(g.ya-(g.fk?PI:0));P.grind=null;emit('grind',{d:g.d||0,r0:g.r0||g.r,k:(g.r0||g.r).k,n:g.n})}
 function flipQ(f){const a=Math.min(1,f.t/f.d)*PI*2;_q.setFromEuler(_e.set(f.rx*a,f.s*f.ry*a,f.s*f.rz*a,'YXZ'))}
 // J/K out of a darkslide (board upside down) or a primo (board on its edge): finish the flip back onto the wheels
 function flipOut(k){const rz=k==='j'?1:-1,s=stanceSign(),E=P.grind?PI:P.primo.e,p0=((E*s*rz/(2*PI))%1+1)%1,d=.32/Math.max(.25,1-p0);
@@ -1397,15 +1433,16 @@ function stallStep(dt){P.stall.t+=dt;cScore+=150*dt;P.gT=0;if(P.stall.t>2.5)bail
 function dropIn(){const s=P.stall,lp=s.lp,u=Math.atan2(lp.ux,lp.uz);P.x-=lp.ux*.1;P.z-=lp.uz*.1;P.y=topAt(P.x,P.z);P.surf=surfAt(P.x,P.z,hitObj);P.onR=true;
  P.head=s.e.fk?u:u+PI;P.spd=s.e.fk?-3:3;P.vyw=wrap(u+s.ya-P.head);P.stall=null;P.ground=true;P.gT=0;P.landT=0;P.air=0;P.lastIdx=-1}
 
-const CODES={KeyW:'w',ArrowUp:'w',KeyS:'s',ArrowDown:'s',KeyA:'a',ArrowLeft:'a',KeyD:'d',ArrowRight:'d',Space:'sp',ShiftLeft:'sh',ShiftRight:'sh',KeyJ:'j',KeyK:'k',KeyL:'l',KeyI:'i',KeyU:'u',KeyE:'e',KeyR:'r',KeyM:'m',Escape:'m',KeyX:'x',KeyQ:'q',KeyO:'o',KeyC:'c',KeyV:'v',KeyB:'b',KeyT:'t',KeyG:'g',KeyF:'f',KeyP:'p'},
+const CODES={KeyW:'w',ArrowUp:'w',KeyS:'s',ArrowDown:'s',KeyA:'a',ArrowLeft:'a',KeyD:'d',ArrowRight:'d',Space:'sp',ShiftLeft:'sh',ShiftRight:'sh',KeyJ:'j',KeyK:'k',KeyL:'l',KeyI:'i',KeyU:'u',KeyE:'e',KeyR:'r',KeyM:'m',Escape:'m',KeyX:'x',KeyQ:'q',KeyO:'o',KeyC:'c',KeyV:'v',KeyB:'b',KeyT:'t',KeyG:'g',KeyF:'f',KeyP:'p',KeyN:'n',KeyZ:'z',Digit1:'1',Digit2:'2',Digit3:'3',Digit4:'4',Digit5:'5',Numpad1:'1',Numpad2:'2',Numpad3:'3',Numpad4:'4',Numpad5:'5',BracketLeft:'[',BracketRight:']',Enter:'enter',NumpadEnter:'enter',Backspace:'bk'},
  RPC={Enter:'enter',NumpadEnter:'enter',BracketLeft:'[',BracketRight:']'};   // extra keys the replay editor takes
 addEventListener('keydown',e=>{audioInit();if(RPL){const k=CODES[e.code]||RPC[e.code];if(!k)return;e.preventDefault();if(e.repeat)return;K[k]=true;replayKey(k);return}
- const k=CODES[e.code];if(!k)return;e.preventDefault();if(e.repeat)return;K[k]=true;
+ const k=CODES[e.code];if(!k)return;if(paused&&!$('menu').hidden&&(k==='enter'||k==='sp'||k==='bk'))return;e.preventDefault();if(e.repeat)return;K[k]=true;   // menu buttons keep Enter / Space
  if(k==='m'){toggleMenu(!paused);return}if(!paused)kd(k)});
 addEventListener('keyup',e=>{const k=CODES[e.code]||RPC[e.code];if(!k)return;K[k]=false;RCL[k]=false;if(!paused)ku(k)});
 // steering: the pad's left stick is analog, the keys are full lock
 const steer=()=>STR!==null?STR:(K.a?1:0)-(K.d?1:0);
-function kd(k){if(k==='r')respawn();
+function kd(k){if(k==='r'){if(MODE)MODE.retry();else respawn()}   // in a mode (or on its result line) R retries it
+ if(k.length===1&&k>='1'&&k<='5'){modeKey(k);return}if(k==='n'){dropToggle();return}if(DROP.on&&P.mode==='walk'&&dropKey(k))return;   // modes, the dropper
  if(k==='t'){setMarker();return}if(k==='g'){goMarker();return}if(k==='f'){cycleCam();return}if(k==='p'){replayOpen();return}
  if(k==='b'){if(P.mode==='ride')bail('throw');return}   // bail on purpose
  if(k==='e'){if(P.mode==='walk')mount();else if(P.mode==='ride')dismount()}
@@ -1453,7 +1490,7 @@ function tryGrind(){if(P.gcd>0)return false;const sg=P.spd<0?-1:1,fx=Math.sin(P.
   if(key===''&&!dark){const b=Math.abs(wrap(vh-th)),be=b>PI/2?PI-b:b,lead=(Math.sin(vh)*rwx+Math.cos(vh)*rwz)*(fk?-1:1)>0;
    key=be<.3?'':be<.62?(lead?'j':'js'):be<.9?(lead?'k':'ks'):be<1.15?(lead?'lw':'ls'):'l'}   // L: boardslide, or lipslide if the board was turning the trailing end toward the rail
   if(key==='l'&&Math.abs(P.spin)>.15&&Math.sign(P.spin)*(fk?-1:1)*(Math.cos(vh)*rwx-Math.sin(vh)*rwz)<0)key='lip';
-  const g={r,t,dir,fk,rsx,ya:wrap(vh-th),yt:0,bal:0,drift:(Math.random()-.5)*.6,gt:0,sw:0,ci:0},n=gSet(g,key);
+  const g={r,t,dir,fk,rsx,ya:wrap(vh-th),yt:0,bal:0,drift:(Math.random()-.5)*.6,gt:0,sw:0,ci:0,d:0,r0:r},n=gSet(g,key);
   let nm=n,pt=g.e.p;if(P.airT){const a=airName(P.airT,0);if(a.n&&!a.plain){nm=a.n+' to '+n;pt+=a.p}else if(P.airT.st)nm=P.airT.st+' '+n}   // 'Kickflip to FS 50-50'
   P.airT=null;P.grab=0;P.ps=0;P.roll=0;P.rev=null;P.fb=false;P.pin=false;P.bl=0;P.vyw=0;
   P.grind=g;P.head=th;P.spd=Math.max(hs*Math.abs(dot),4);P.spin=0;P.vy=0;P.y=ry;trick(nm,pt);sfx.lock(r.k);g.ci=combo.length-1;if(dark)pop('DARKSLIDE','var(--ac2)');return true}return false}
@@ -1472,13 +1509,14 @@ function land(h){P.y=h;P.ground=true;P.gT=0;const fx=Math.sin(P.head),fz=Math.co
  const fl=P.flip;if(fl){flipDone();P.flip=fl}                                  // caught late, still counts
  if(P.bv){P.sw=!P.sw;if(P.bv.air)air().bv++;P.bv=null}
  // the whole air scores as one named trick
- P.lastIdx=-1;if(P.airT||n||P.air>1.1){const a=airName(air(),n);let nm=a.n,pt=a.p;if(P.air>1.1){pt+=Math.round(P.air*300);if(!nm)nm='Big Air'}if(nm){trick(nm,pt);P.lastIdx=combo.length-1}}
- P.airT=null;P.landT=0;P.pin=false;P.bl=0;
+ P.lastIdx=-1;let sig='',spt=0,a0=null;if(P.airT||n||P.air>1.1){a0=air();const a=airName(a0,n);let nm=a.n,pt=a.p;sig=nm;spt=pt;if(P.air>1.1){pt+=Math.round(P.air*300);if(!nm)nm='Big Air'}if(nm){trick(nm,pt);P.lastIdx=combo.length-1}}
+ const gp=gapCheck(sig||'Roll Off',spt);P.airT=null;P.landT=0;P.pin=false;P.bl=0;   // named gaps: the gap joins the combo
  // landing grade: Bolts (clean) pays 10%, Sketchy (over-rotated, late catch, heavy) costs 30% and some speed
  if(ar>.28||fp<.93){P.sketch=.6;cScore*=.7;P.spd*=.88;grade('SKETCHY','#ffb21f')}
  else if(hv>.7){P.sketch=.35;cScore*=.85;grade('HEAVY','#ffb21f')}
  else if(ar<.1&&!P.flip&&vn>-8){cScore*=1.1;if(combo.length>1||combo.length&&P.air>.6)grade('BOLTS','var(--ac2)')}
- P.vy=0;P.spin=r;P.flip=null;P.grab=0;P.rev=null;if(P.spd<-.5)P.revW=.4}       // residual spin eases out on the ground; fakie opens the revert window
+ P.vy=0;P.spin=r;P.flip=null;P.grab=0;P.rev=null;if(P.spd<-.5)P.revW=.4;       // residual spin eases out on the ground; fakie opens the revert window
+ const tk=P.tk;emit('land',{sig,pts:spt,n,pop:a0?a0.pop:null,fl:a0?a0.fl.length:0,gr:!!(a0&&a0.gr),vt:!!(a0&&a0.vt),air:P.air,h:tk?P.apex-tk.y:0,tk,x:P.x,z:P.z,gap:gp,flat:!P.onR&&topAt(P.x,P.z)-base(P.x,P.z)<.2})}
 // kickturn (Shift + A/D, slow or stopped): weight on the tail, nose up, pivot 90 on the back wheels. Alternate them quickly on the flat
 // to tic-tac along; stalled up a transition it turns you 180 to ride back down
 function kickturn(dir){if(P.mode!=='ride'||!P.ground||P.grind||P.kt||P.manual||P.primo||P.rev||P.bv||P.charging||P.push!=null&&P.push<.4||Math.abs(P.spd)>3||P.surf==='grass')return false;
@@ -1489,14 +1527,14 @@ function ktStep(dt){const k=P.kt;k.t+=dt;const da=k.a*k.dir*ss(0,1,k.t/k.d)-k.do
  const sl=slopeAt(),hl=topAt(P.x+fz*.3,P.z-fx*.3),hr=topAt(P.x-fz*.3,P.z+fx*.3);P.pitch+=(-Math.atan(sl)-P.pitch)*Math.min(1,dt*14);P.roll+=(Math.atan(clamp((hl-hr)/.6,-4,4))-P.roll)*Math.min(1,dt*10);
  if(k.t>=k.d){P.kt=null;P.ktT=0;P.ktD=k.dir;P.sl=sl;if(k.ap){trick((k.dir*stanceSign()>0?'BS':'FS')+' Kickturn',150);P.gT=0}else if(k.tic&&P.spd>-.3)P.spd=Math.min(4,Math.max(0,P.spd)+.5);else P.spd*=.9}}
 function revert(dir){if(P.mode!=='ride'||!P.ground||P.grind||P.rev||Math.abs(P.spd)<.5||P.surf==='grass')return;P.rev={t:0,d:.28,dir};P.revW=0}
-function step(dt){ST+=dt;if(TRAF.length)trafStep(dt);if(DYN.length)propStep(dt);
+function step(dt){ST+=dt;modeStep(dt);if(TRAF.length)trafStep(dt);if(DYN.length)propStep(dt);
  if(P.mode==='rag'){ragStep(dt);boardStep(dt);return}if(P.mode==='walk'){walkStep(dt);boardStep(dt);return}if(P.mode!=='ride')return;
  if(CARN.length&&carHit())return;if(P.car&&(!P.ground||P.grind))carOff();if(P.ground&&!P.grind&&CARN.length)carRide(dt);else if(P.car)P.car=null;
  P.gcd-=dt;if(P.charging)P.charge=Math.min(1,P.charge+dt/.6);if(P.cv<1)P.cv+=dt;if(P.bl>0)P.bl-=dt;
  if(P.bv&&(P.bv.t+=dt)>=P.bv.d){P.sw=!P.sw;if(P.bv.air)air().bv++;else pop(P.sw?'SWITCH':'NORMAL','var(--ac2)');P.bv=null}
  if(P.vyw)P.vyw=Math.abs(P.vyw)<.002?0:P.vyw*Math.max(0,1-dt*9);
  if(P.stall){stallStep(dt);return}if(P.wall){wallStep(dt);return}
- if(P.grind){const g=P.grind,r=g.r,e=g.e,sn=(r.y2-r.y1)/r.L3*g.dir,t0=g.t;g.t+=g.dir*P.spd*dt/r.L3;g.gt+=dt;
+ if(P.grind){const g=P.grind,r=g.r,e=g.e,sn=(r.y2-r.y1)/r.L3*g.dir,t0=g.t;g.t+=g.dir*P.spd*dt/r.L3;g.gt+=dt;g.d+=P.spd*dt;
   if(r.stop)for(const k of r.stop)if((t0-k)*(g.t-k)<0){bail('stop');return}   // skatestopper: the trucks hit a knob
   P.spd-=(e.fr+GS*sn)*dt;cScore+=(e.sl?180:160)*dt;
   g.ya+=(g.yt-g.ya)*Math.min(1,dt*14);
@@ -1583,7 +1621,7 @@ function step(dt){ST+=dt;if(TRAF.length)trafStep(dt);if(DYN.length)propStep(dt);
   else P.grab=0;
   const fx=Math.sin(P.head),fz=Math.cos(P.head),nx=P.x+fx*P.spd*dt,nz=P.z+fz*P.spd*dt,nh=topAt(nx,nz),ho=hitObj,ms=Math.sign(P.spd)||1;
   if(blocked(nx,nz,nh,fx*ms,fz*ms)||outW(nx,nz)){if(wallStart(ho,fx*ms,fz*ms))return;if(Math.abs(P.spd)>9){bail('wall');return}if(Math.abs(P.spd)>2.5&&nh-P.y<.7){bail('trip');return}P.spd*=-.3}else{P.x=nx;P.z=nz}
-  const y0=P.y;P.vy-=GA*dt;P.y+=P.vy*dt;P.pitch*=1-dt*2;
+  const y0=P.y;P.vy-=GA*dt;P.y+=P.vy*dt;P.pitch*=1-dt*2;if(P.y>P.apex)P.apex=P.y;
   if(P.vy<0&&tryGrind())return;const h=topAt(P.x,P.z);
   if(P.y<=h){if(hitBox&&y0<h-.03){bail('trip');return}P.surf=surfAt(P.x,P.z,hitObj);P.onR=!!hitObj&&hitObj.t===1;land(h)}}   // came in below the top edge: trucks clip it
  if(P.y<base(P.x,P.z)-15)respawn()}
@@ -1709,6 +1747,7 @@ function drawMiniBase(){mbg=document.createElement('canvas');mbg.width=MW;mbg.he
  g.fillStyle='#ffb21f';SPOTS.forEach(([n,,x,z])=>{g.beginPath();g.arc((x-WX0)/MM,(z-WZ0)/MM,3,0,7);g.fill()})}
 function drawMini(){const cx=(P.x-WX0)/MM,cz=(P.z-WZ0)/MM,sc=200/MV,tp=(x,z)=>[100+((x-WX0)/MM-cx)*sc,100+((z-WZ0)/MM-cz)*sc];mg.fillStyle='#2b3a26';mg.fillRect(0,0,200,200);mg.drawImage(mbg,cx-MV/2,cz-MV/2,MV,MV,0,0,200,200);
  if(typeof MK!=='undefined'&&MK){const [a,b]=tp(MK.x,MK.z);mg.fillStyle='#3fd0c9';mg.strokeStyle='#101215';mg.lineWidth=1.5;mg.beginPath();mg.arc(a,b,3.5,0,7);mg.stroke();mg.fill()}
+ modeMini(tp);
  mg.fillStyle='#e3e6ea';for(const c of TRAF){const [a,b]=tp(c.x,c.z);if(a>-3&&a<203&&b>-3&&b<203)mg.fillRect(a-1.5,b-1.5,3,3)}   // traffic
  mg.save();mg.translate(100,100);mg.rotate(Math.atan2(Math.cos(P.head),Math.sin(P.head)));
  mg.fillStyle='#fff';mg.strokeStyle='#101215';mg.lineWidth=2;mg.beginPath();mg.moveTo(8,0);mg.lineTo(-5,5);mg.lineTo(-2,0);mg.lineTo(-5,-5);mg.closePath();mg.stroke();mg.fill();mg.restore()}
@@ -1929,7 +1968,7 @@ function frame(now){requestAnimationFrame(frame);const dt=clamp((now-last)/1000,
   else if(!rd&&!P.carry&&!B.rail&&_u.set(0,1,0).applyQuaternion(B.q).y>.5&&B.p.y-topAt(B.p.x,B.p.z)<.13)WRT=B.v.dot(_f.set(0,0,1).applyQuaternion(B.q))/.027;
   else WRT*=Math.max(0,1-dt*.6);
   WSP=(WSP+clamp(WRT*dt,-1.1,1.1))%(2*PI);for(const w of WH)w.rotation.x=WSP}
- drawBody();
+ drawBody();modeFrame(dt);
  const rg=P.mode==='rag',rd=P.mode==='ride',C=CAMS[camMode],film=!!C.film;cam.position.sub(SHK);
  if(film!==FILM){FILM=film;document.body.classList.toggle('film',film)}
  if(film)filmCam(dt,tx,ty,tz);
@@ -1963,9 +2002,9 @@ function frame(now){requestAnimationFrame(frame);const dt=clamp((now-last)/1000,
   if(c!==hudC){hudC=c;const i=c.indexOf('|');ctrEl.textContent=c.slice(0,i);cvalEl.textContent=c.slice(i+1);FA=null;FEED.length=0;CV0=-2}}
  else{if(hudC){hudC='';ctrEl.textContent='';cvalEl.textContent='';CV0=-2}feedSync();valSync()}
  if(rg!==MEATC){MEATC=rg;$('combo').classList.toggle('meat',rg)}timerSync();
- if((hudT-=dt)<0){hudT=.2;$('area').textContent=area();const h=$('hint');
+ if((hudT-=dt)<0){hudT=.2;$('area').textContent=area();const h=$('hint');modeHud();if((saveT-=.2)<=0){saveT=5;saveProf()}
   const sn=(P.goofy?'goofy':'regular')+(P.mode==='ride'?(P.sw?' · switch':'')+(P.spd<-.3?' · fakie':''):''),se=$('stn');if(se.textContent!==sn)se.textContent=sn;
-  const t=P.mode==='walk'&&P.upT>=UPT&&!(P.runT>0)?(P.carry?'Space: caveman (jump, throw it under you) · E to get on':boardDist()<1.8?'Press E to get on your board · Space to pick it up':'Walk to your board · W/A/D · Shift to run · R to reset')+(P.inj.leg||P.inj.arm?' · hurt: R heals':''):P.mode!=='ride'?'':P.wob>.4?'Speed wobble! Tuck (W), stop steering, or powerslide (S + A/D)':P.grind&&P.grind.e.dark?'Darkslide! J / K to flip out. Leaving the rail upside down bails':P.primo?'Primo! J / K to flip out, or ride it out and step off':P.wall?'Wallride: Space wallie · C wallplant':P.stall?'Space to drop back in':P.ground&&!P.kt&&Math.abs(P.spd)<.4&&(K.a||K.d)&&!K.sh?'A stopped board won\'t steer: Shift + A/D kickturns · W pushes':'';if(h.textContent!==t){h.textContent=t;h.hidden=!t}}
+  let t=P.mode==='walk'&&P.upT>=UPT&&!(P.runT>0)?(P.carry?'Space: caveman (jump, throw it under you) · E to get on':boardDist()<1.8?'Press E to get on your board · Space to pick it up':'Walk to your board · W/A/D · Shift to run · R to reset')+(P.inj.leg||P.inj.arm?' · hurt: R heals':''):P.mode!=='ride'?'':P.wob>.4?'Speed wobble! Tuck (W), stop steering, or powerslide (S + A/D)':P.grind&&P.grind.e.dark?'Darkslide! J / K to flip out. Leaving the rail upside down bails':P.primo?'Primo! J / K to flip out, or ride it out and step off':P.wall?'Wallride: Space wallie · C wallplant':P.stall?'Space to drop back in':P.ground&&!P.kt&&Math.abs(P.spd)<.4&&(K.a||K.d)&&!K.sh?'A stopped board won\'t steer: Shift + A/D kickturns · W pushes':'';t=modeHint(t);if(h.textContent!==t){h.textContent=t;h.hidden=!t}}
  if(TRAF.length)carDraw();if(DYN.length)propFrame(dt);cam.updateMatrixWorld();FRUS.setFromProjectionMatrix(_pm.multiplyMatrices(cam.projectionMatrix,cam.matrixWorldInverse));   // traffic, props, and the view the traffic hides from
  audioFrame(dt);if(!paused)recFrame(dt,v);sparkStep(paused?0:dt);drawMini();render()}
 
@@ -2003,7 +2042,7 @@ function hideMeat(){meatEl.hidden=true;clearTimeout(meatCard.t)}
 // after the get-up: the report; broken legs limp and broken arms get held (walk labels: the skater's right is side 1)
 function meatCard(){const h=HOM;if(!h||h.shown)return;h.shown=1;
  for(let i=2;i<15;i++)if(h.br[i]&&i!==8){const sd=SIDE[i]==='R'?1:2;if(i<8){if(!P.inj.arm)P.inj.arm=sd}else if(!P.inj.leg)P.inj.leg=sd}
- const sc=slamScore();if(sc<300&&!h.bones.length)return;h.final=sc;
+ const sc=slamScore();if(sc<300&&!h.bones.length)return;h.final=sc;emit('hom',{score:sc,bones:h.bones.length,x:h.start.x,z:h.start.z});
  let nb='';if(sc>meatBest){meatBest=sc;nb=' · new best!';try{localStorage.setItem('cl_meatBest',sc)}catch(e){}setMeat(meatOn)}
  if(meatOn)total+=sc;drawMeat();
  $('meatS').textContent=sc.toLocaleString();$('meatB').textContent=h.bones.concat(h.tags).join(' · ')||'Just bruises';
@@ -2012,11 +2051,291 @@ function meatCard(){const h=HOM;if(!h||h.shown)return;h.shown=1;
 function setMeat(v){meatOn=v;try{localStorage.setItem('cl_meat',v?'1':'0')}catch(e){}const b=$('meatT');b.innerHTML='Hall of Meat: <b>'+(v?'On':'Off')+'</b>'+(meatBest?' · best slam '+meatBest.toLocaleString():'');b.setAttribute('aria-pressed',v);b.title='When on, slam scores are added to your score'}
 $('meatT').onclick=()=>setMeat(!meatOn);setMeat(meatOn);
 
+// ---------- career: stats, board sales, titles and the shop. One profile in localStorage ('concreteLine.v1'), saved every 5 s and when the tab hides ----------
+const PKEY='concreteLine.v1',PF0={score:0,topKmh:0,bestCombo:0,longGrind:0,km:0,bails:0,sales:0,med:{},cb:{},own:{},book:{},races:{},skate:{w:0,l:0},load:{deck:1,wheel:0,hood:0,pants:0,cap:0},wear:0,lastU:0,drops:[]};
+const PFL=(()=>{const o=JSON.parse(JSON.stringify(PF0));let p=null;try{p=JSON.parse(localStorage.getItem(PKEY))}catch(e){}
+ if(p&&typeof p==='object')for(const k in o)if(p[k]!=null&&typeof p[k]===typeof o[k]&&Array.isArray(p[k])===Array.isArray(o[k]))o[k]=p[k];return o})();
+total=PFL.score;best=PFL.topKmh;let saveT=5;
+function saveProf(){PFL.score=total;PFL.topKmh=Math.max(PFL.topKmh,best);try{localStorage.setItem(PKEY,JSON.stringify(PFL))}catch(e){}}
+addEventListener('pagehide',saveProf);document.addEventListener('visibilitychange',()=>{if(document.hidden)saveProf()});
+const TITLES=[[0,'Am'],[5e4,'Pro'],[1e6,'Legend']],title=(s=PFL.sales)=>{let t=TITLES[0];for(const q of TITLES)if(s>=q[0])t=q;return t};
+// unlockables: [name, boards needed, colour]
+const SHOP=[{k:'deck',n:'Deck',it:[['Teal',0],['Concrete Line',0],['Checker',5e3],['Flames',15e3],['Halden U',4e4],['Skull',1e5],['Sunset',2.5e5],['Gold Leaf',1e6]]},
+ {k:'wheel',n:'Wheels',it:[['White',0,0xffffff],['Black',0,0x3a3a3e],['Red',8e3,0xd9363e],['Teal',2e4,0x3fd0c9],['Gold',5e5,0xe2b33c]]},
+ {k:'hood',n:'Hoodie',it:[['Slate',0,0x2f6f8f],['Black',0,0x1d1d1f],['Oxblood',1e4,0x7a1f24],['Olive',2.5e4,0x4f5a2c],['Bone',6e4,0xe2dccd],['Safety',1.5e5,0xff7a1a]]},
+ {k:'pants',n:'Pants',it:[['Grey',0,0x4a4740],['Denim',0,0x2c3e5c],['Black',1.2e4,0x1b1b1d],['Khaki',3e4,0xb39a6e]]},
+ {k:'cap',n:'Cap',it:[['Red',0,0xd94f2b],['Black',0,0x1d1d1f],['Teal',1.5e4,0x3fd0c9],['Gold',3e5,0xe2b33c]]}];
+function toast(t,c){const box=$('toast'),e=document.createElement('div');e.textContent=t;if(c)e.style.color=c;box.append(e);while(box.children.length>4)box.firstChild.remove();setTimeout(()=>e.remove(),3400)}
+// sell boards: a toast, a new title, and anything it unlocks in the shop
+function award(n,why){n=Math.round(n);if(!(n>0))return;const t0=title();PFL.sales+=n;toast('+'+n.toLocaleString()+' boards'+(why?' · '+why:''));const t1=title();if(t1!==t0){pop(t1[1].toUpperCase()+'!','var(--ac)');toast('You\'re '+t1[1]+' now','var(--ac)')}
+ for(const s of SHOP)for(const it of s.it)if(it[1]>PFL.lastU&&it[1]<=PFL.sales)toast('Unlocked: '+it[0]+' '+s.n.toLowerCase(),'var(--ac2)');PFL.lastU=Math.max(PFL.lastU,PFL.sales)}
+// deck graphics: 128 x 384 painters on the board's base; grinds wear them back to the wood
+const DCK=document.createElement('canvas');DCK.width=128;DCK.height=384;const DCG=DCK.getContext('2d'),DECKT=new T.CanvasTexture(DCK);DECKT.encoding=T.sRGBEncoding;DECKT.anisotropy=4;
+const dTxt=(g,t,c,px,y=192)=>{g.save();g.translate(64,y);g.rotate(-PI/2);g.fillStyle=c;g.font=px+'px '+GF;g.textAlign='center';g.textBaseline='middle';const w=g.measureText(t).width;if(w>360)g.scale(360/w,1);g.fillText(t,0,2);g.restore()};
+const DPAINT=[
+ g=>{g.fillStyle='#3fd0c9';g.fillRect(0,0,128,384)},
+ g=>{g.fillStyle='#f1efe6';g.fillRect(0,0,128,384);g.fillStyle='#ffb21f';g.fillRect(0,40,128,304);dTxt(g,'CONCRETE LINE','#101215',44)},
+ g=>{for(let y=0;y<24;y++)for(let x=0;x<8;x++){g.fillStyle=(x+y)%2?'#f1efe6':'#1d1d1f';g.fillRect(x*16,y*16,16,16)}},
+ g=>{g.fillStyle='#1d1d1f';g.fillRect(0,0,128,384);for(const [c,s] of[['#e8455f',1],['#ffb21f',.74],['#fff1a8',.46]]){g.fillStyle=c;g.beginPath();g.moveTo(0,384);for(let x=0;x<=128;x+=8)g.lineTo(x,384-(170+80*Math.sin(x*.11+s*5))*s-((x/8)%2?0:46*s));g.lineTo(128,384);g.fill()}},
+ g=>{g.fillStyle='#1f2a44';g.fillRect(0,0,128,384);g.strokeStyle='#e2b33c';g.lineWidth=6;g.beginPath();g.arc(64,110,40,0,7);g.stroke();g.fillStyle='#e2b33c';g.font='48px '+GF;g.textAlign='center';g.textBaseline='middle';g.fillText('H',64,114);dTxt(g,'HALDEN U','#e2b33c',34,270)},
+ g=>{g.fillStyle='#c8102e';g.fillRect(0,0,128,384);g.strokeStyle='#f1efe6';g.lineWidth=12;g.lineCap='round';g.beginPath();g.moveTo(24,230);g.lineTo(104,300);g.moveTo(104,230);g.lineTo(24,300);g.stroke();
+  g.fillStyle='#f1efe6';g.beginPath();g.arc(64,170,38,0,7);g.fill();g.fillRect(44,190,40,34);g.fillStyle='#1d1d1f';for(const x of[50,78]){g.beginPath();g.arc(x,168,10,0,7);g.fill()}for(let x=48;x<84;x+=9)g.fillRect(x,208,4,16)},
+ g=>{const gr=g.createLinearGradient(0,0,0,384);gr.addColorStop(0,'#2b1a5a');gr.addColorStop(.55,'#e8455f');gr.addColorStop(1,'#ffb21f');g.fillStyle=gr;g.fillRect(0,0,128,384);g.fillStyle='#ffd54a';g.beginPath();g.arc(64,250,46,0,7);g.fill();g.fillStyle='#2b1a5a';for(let y=236;y<300;y+=12)g.fillRect(0,y,128,4+(y-236)/10)},
+ g=>{const gr=g.createLinearGradient(0,0,128,384);gr.addColorStop(0,'#8a6a1c');gr.addColorStop(.5,'#ffe08a');gr.addColorStop(1,'#a8801f');g.fillStyle=gr;g.fillRect(0,0,128,384);let s=5;const r=()=>(s=s*16807%2147483647)/2147483647;for(let i=0;i<500;i++){g.fillStyle=`rgba(${r()<.5?'255,250,220':'90,64,10'},${.15+r()*.3})`;g.fillRect(r()*128,r()*384,1+r()*3,1+r()*3)}dTxt(g,'LEGEND','#5a400a',40)}];
+// wear: stroke i is always the same scratch, so a reload redraws the same worn deck
+function deckWear(i0,i1){for(let i=Math.max(0,i0);i<i1&&i<400;i++){let s=(i*7919+13)%2147483647||1;const r=()=>(s=s*16807%2147483647)/2147483647;r();
+  const y=r()*384,x=r()*128;DCG.strokeStyle=`rgba(212,176,124,${.2+r()*.32})`;DCG.lineWidth=1+r()*3.5;DCG.lineCap='round';DCG.beginPath();if(r()<.7){DCG.moveTo(-4,y);DCG.lineTo(132,y+(r()-.5)*36)}else{DCG.moveTo(x,y);DCG.lineTo(x+(r()-.5)*24,y+30+r()*90)}DCG.stroke()}DECKT.needsUpdate=true}
+const shopIt=k=>{const s=SHOP.find(q=>q.k===k),i=PFL.load[k]|0;return s.it[i<s.it.length?i:0]};
+function applyLoad(){HOOD.color.setHex(shopIt('hood')[2]);PANTS.color.setHex(shopIt('pants')[2]);CAP.color.setHex(shopIt('cap')[2]);bd.userData.wh[0].material.color.setHex(shopIt('wheel')[2]);
+ const dm=bd.children[1].material;if(dm.map!==DECKT){dm.map=DECKT;dm.color.set(0xffffff);dm.needsUpdate=true}const d=PFL.load.deck|0;DPAINT[d<DPAINT.length?d:0](DCG);deckWear(0,PFL.wear)}
+function equip(k,i){const s=SHOP.find(q=>q.k===k),it=s.it[i];if(it[1]>PFL.sales){toast(it[0]+' unlocks at '+it[1].toLocaleString()+' boards','#ff5a6a');return false}PFL.load[k]=i;if(k==='deck')PFL.wear=0;applyLoad();saveProf();return true}
+onEv('combo',e=>{if(e.v>PFL.bestCombo)PFL.bestCombo=e.v;if(e.v>=1500)award(e.v/25,'combo')});
+onEv('grind',e=>{if(e.d>PFL.longGrind)PFL.longGrind=e.d;const n=Math.min(6,Math.ceil(e.d/4));if(PFL.wear<400&&n>0){deckWear(PFL.wear,PFL.wear+n);PFL.wear+=n}});
+onEv('bail',()=>{PFL.bails++});onEv('hom',e=>{if(e.score>=300)award(e.score/20,'slam')});
+
+// ---------- named gaps and the spot book: clearing one adds its name to the combo; a trick never done over it before is an NBD (double points) ----------
+// f: where the air started, t: where it came down (bi: either way round)
+const inR=(p,r)=>!!p&&p.x>r[0]&&p.x<r[2]&&p.z>r[1]&&p.z<r[3];
+const GAPS=[{n:'College Hill Gap',h:'Lower Quad',f:[-5.5,222,5.5,232],t:[-9,244,9,300],p:800},{n:'Mega Ramp Gap',h:'Mega Ramp',f:[203,-436,217,-422],t:[202,-414,218,-330],p:1500},
+ {n:'Library Steps',h:'Library',f:[-28,-424,28,-407.6],t:[-11,-405.5,11,-372],p:400},{n:'Fountain Hop',h:'Upper Campus',f:[-7,-358,7,-346.2],t:[-7,-333.8,7,-322],p:600,bi:1},
+ {n:'Quad Platform Stairs',h:'Lower Quad',f:[-57,265,-33,295],t:[-58,297.8,-30,330],p:500},{n:'Civic Six',h:'Civic Plaza',f:[518,404,542,428],t:[516,432.4,544,470],p:700},
+ {n:'The Big Ten',h:'Civic Plaza',f:[560,428,580,446],t:[562,453.6,578,490],p:2000},{n:'Funbox Gap',h:'Southside Park',f:[527,695,535.5,705],t:[544.5,694,556,706],p:900,bi:1},
+ {n:'Pyramid Gap',h:'Southside Park',f:[562.5,739,567.5,745.6],t:[561,751.2,569,762],p:800,bi:1},{n:'Jersey Double',h:'Underpass DIY',f:[768,655,772,667.6],t:[768,676.4,772,690],p:900,bi:1},
+ // any pool, deck to deck straight over the water (Pool Lane's backyards, the Southside combi, the rec bowl)
+ {n:'Pool Jump',h:'Pool Lane',p:1200,tst:tk=>{if(poolDip(tk.x,tk.z)>0||poolDip(P.x,P.z)>0||Math.hypot(P.x-tk.x,P.z-tk.z)<5)return false;for(const f of[.25,.5,.75])if(poolDip(tk.x+(P.x-tk.x)*f,tk.z+(P.z-tk.z)*f)<.8)return false;return true}}];
+function gapCheck(sig,pts){const tk=P.tk;if(!tk)return null;
+ for(const g of GAPS){if(!(g.tst?g.tst(tk):inR(tk,g.f)&&inR(P,g.t)||g.bi&&inR(tk,g.t)&&inR(P,g.f)))continue;
+  const b=PFL.book[g.n]||(PFL.book[g.n]={c:0,t:{}}),first=!b.c,nbd=!b.t[sig];b.c++;if(nbd)b.t[sig]=1;
+  trick(g.n,nbd?g.p*2:g.p);if(nbd)toast('NBD: '+sig+' · '+g.n,'var(--ac2)');if(first){pop('NEW GAP: '+g.n.toUpperCase(),'var(--ac2)');award(3000,'gap found')}else if(nbd){pop('NBD!','var(--ac2)');award(800,'NBD')}
+  return g.n}return null}
+
+// ---------- modes: spot challenges, Own the Spot, Game of S.K.A.T.E., races. One at a time in MODE; R retries, the same digit (or the menu) quits ----------
+let MODE=null;
+const MED=['No medal','Am','Pro','Legend'],MEDC=['#ffb21f','#d08a4e','#c9d2da','#ffd54a'],MEDB=[0,2500,7500,2e4],ORD=['','1st','2nd','3rd','4th'];
+const medOf=(v,tg)=>v>=tg[2]?3:v>=tg[1]?2:v>=tg[0]?1:0;
+const fmtV=(v,u)=>u==='pts'?Math.round(v).toLocaleString()+' pts':u==='m'?v.toFixed(1)+' m':u==='km/h'?Math.round(v)+' km/h':Math.round(v)+' '+(Math.round(v)===1?u.slice(0,-1):u);
+const fmtT=(t,d=2)=>{const f=10**d,r=Math.round(t*f)/f,m=Math.floor(r/60);return m+':'+(r-m*60).toFixed(d).padStart(d?3+d:2,'0')};
+const nearSpot=(x,z)=>{let b=0,d=1e9;SPOTS.forEach((s,i)=>{const e=Math.hypot(s[2]-x,s[3]-z);if(e<d){d=e;b=i}});return b};
+// Own the Spot zones, one per SPOTS row
+const ZONES=[[-16,-280,16,215],[-146,-330,-114,330],[194,-500,226,-320],[-72,-432,72,-268],[32,-270,48,214],[-190,300,-70,420],[78,218,262,462],[-72,204,72,335],
+ [290,-1345,430,-460],[-575,-260,-405,150],[462,392,598,528],[496,636,704,796],[756,640,826,806],[340,150,1010,700],[-122,220,-94,300]],OWNT=[3000,1e4,25000];
+// spot challenges: at = the marker and the start [x,z,heading]; ev = the event that scores; v(e) = its value (null: doesn't count); tg = Am / Pro / Legend; acc: values add up
+const CHAL=[
+ {id:'lib',n:'Flip the Library Steps',d:'Any flip down the three-stair off the terrace. Am: a kickflip.',at:[-4,-417,0],ev:'land',v:e=>e.gap==='Library Steps'&&e.fl?e.pts:null,tg:[600,1000,1600],u:'pts'},
+ {id:'dorm',n:'Dorm Rail Marathon',d:'One grind down the Dorm Rail. Hang on with A/D.',at:[38.5,-266,0],ev:'grind',v:e=>e.r0.x1===40&&e.r0.x2===40?e.d:null,tg:[60,110,150],u:'m'},
+ {id:'hillgap',n:'Huck the College Hill Gap',d:'Bomb the hill and go long off the gap kicker at the bottom.',at:[0,-150,0],ev:'land',v:e=>inR(e.tk,GAPS[0].f)?Math.hypot(e.x-e.tk.x,e.z-e.tk.z):null,tg:[18,25,32],u:'m'},
+ {id:'mega',n:'Meat the Mega Ramp',d:'Break bones off the Mega Ramp. It counts after you get up.',at:[210,-489,0],ev:'hom',v:e=>inR(e,ZONES[2])?e.bones:null,tg:[1,2,3],u:'bones'},
+ {id:'ridge',n:'Bomb the Ridge',d:'Top speed down Ridge Road. Tuck with W and stay off the brakes.',at:[360,-1326,-.19],ev:'tick',v:()=>P.mode==='ride'?Math.abs(P.spd)*3.6:null,tg:[75,95,115],u:'km/h',lim:150},
+ {id:'pool',n:'Pool Lane Coping',d:'Grind the coping of a backyard pool. Air out of the deep end and lock on.',at:[-441,-230,PI/2],ev:'grind',v:e=>e.k==='coping'?e.d:null,tg:[2,6,12],u:'m',lim:90},
+ {id:'hp',n:'Boost the Halfpipe',d:'Air above the coping. Pump the transitions: W through the curve.',at:[170,270,PI/2],ev:'land',v:e=>e.vt&&inR(e,[150,255,190,285])?e.h:null,tg:[1.2,2.4,3.5],u:'m'},
+ {id:'civic',n:'Civic Six',d:'Down the six-stair at Civic Plaza. Am: ollie it · Pro: a flip.',at:[525,406,0],ev:'land',v:e=>e.gap==='Civic Six'?e.pts:null,tg:[100,600,1200],u:'pts'},
+ {id:'combi',n:'Combo the Combi',d:'Your best single combo at Southside Park.',at:[600,716,PI/2],ev:'combo',v:e=>inR(e,ZONES[11])?e.v:null,tg:[2000,6000,15000],u:'pts',lim:90},
+ {id:'wall',n:'Underpass Wall Session',d:'Wallrides, wallies and wallplants at the Underpass DIY.',at:[790,690,0],ev:'trick',v:e=>/Wall/.test(e.n)&&inR(P,ZONES[12])?1:null,acc:1,tg:[1,3,6],u:'walls',lim:90},
+ {id:'car',n:'Car Surfing',d:'Ollie onto a moving car on Fifth Avenue and ride the roof.',at:[720,330,0],ev:'tick',v:dt=>P.mode==='ride'&&P.car?Math.hypot(P.car.vx,P.car.vz)*dt:null,acc:1,tg:[15,60,150],u:'m',lim:120}];
+function endMode(quiet){const M=MODE;if(!M)return;MODE=null;if(M.k==='race')raceClean();if(M.k==='skate')HOOD.color.setHex(shopIt('hood')[2]);$('mode').hidden=true;if(!quiet&&!M.done)pop('Mode ended','var(--ac2)')}
+function startChal(i){endMode(1);const c=CHAL[i];MODE={k:'chal',i,c,best:0,med:0,t:0,lim:c.lim||60,retry:()=>startChal(i)};spot=nearSpot(c.at[0],c.at[1]);clearMarker();respawnAt(...c.at);pop(c.n.toUpperCase(),'var(--ac)');toast(c.d)}
+function chalEv(ev,e){const M=MODE;if(!M||M.k!=='chal'||M.done||M.c.ev!==ev)return;const v=M.c.v(e);if(v==null||!(v>0))return;
+ M.best=M.c.acc?M.best+v:Math.max(M.best,v);const m=medOf(M.best,M.c.tg);if(m>M.med){M.med=m;pop(MED[m].toUpperCase()+' MEDAL',MEDC[m])}if(M.med===3)chalEnd()}
+for(const ev of['land','grind','hom','combo','trick'])onEv(ev,e=>chalEv(ev,e));
+function chalEnd(){const M=MODE,c=M.c,o=PFL.med[c.id]||0;M.done=true;M.rt=4;if(M.best>(PFL.cb[c.id]||0))PFL.cb[c.id]=M.best;
+ if(M.med>o){PFL.med[c.id]=M.med;for(let m=o+1;m<=M.med;m++)award(MEDB[m],MED[m]+' medal');chalMark(M.i)}
+ M.res=(M.med?MED[M.med]+' medal · ':'No medal · ')+fmtV(M.best,c.u)+(M.med<3?' · '+MED[M.med+1]+' at '+fmtV(c.tg[M.med],c.u):'')+' · R to try again';pop(M.med?MED[M.med].toUpperCase():'TIME',M.med?MEDC[M.med]:'#ff5a6a');saveProf()}
+// the markers: an additive beam and a label per challenge, tinted by your best medal
+const CHM=[];
+function chalBuild(){const geo=new T.CylinderGeometry(.32,.32,14,12,1,true);CHAL.forEach((c,i)=>{const [x,z]=c.at,y=topAt(x,z),b=new T.Mesh(geo,new T.MeshBasicMaterial({color:0xffb21f,transparent:true,opacity:.2,blending:T.AdditiveBlending,depthWrite:false,side:T.DoubleSide}));
+  b.position.set(x,y+7,z);scene.add(b);const cv=document.createElement('canvas');cv.width=512;cv.height=128;const tx=new T.CanvasTexture(cv);tx.encoding=T.sRGBEncoding;
+  const sp=new T.Sprite(new T.SpriteMaterial({map:tx,transparent:true,depthWrite:false}));sp.scale.set(8,2,1);sp.position.set(x,y+15,z);scene.add(sp);CHM.push({b,sp,cv,tx});chalMark(i)})}
+function chalMark(i){const c=CHAL[i],m=PFL.med[c.id]||0,o=CHM[i];if(!o)return;o.b.material.color.set(MEDC[m]);const g=o.cv.getContext('2d');g.clearRect(0,0,512,128);g.fillStyle='rgba(16,18,21,.8)';g.fillRect(0,10,512,108);g.fillStyle=MEDC[m];g.fillRect(0,10,10,108);
+ g.textAlign='center';g.textBaseline='middle';g.fillStyle='#f1efe6';g.font='36px '+GF;const w=g.measureText(c.n).width;g.save();g.translate(261,46);if(w>470)g.scale(470/w,1);g.fillText(c.n,0,0);g.restore();
+ g.font='600 24px "IBM Plex Mono",monospace';g.fillStyle=MEDC[m];g.fillText(m?MED[m]+' medal · press 1':'Press 1 to start',261,92);o.tx.needsUpdate=true}
+function nearChal(r=7){let b=-1,d=r;CHAL.forEach((c,i)=>{const e=Math.hypot(P.x-c.at[0],P.z-c.at[1]);if(e<d){d=e;b=i}});return b}
+
+// Own the Spot: 90 s, only combos that end inside the spot count
+function startOwn(si){endMode(1);spot=si;clearMarker();respawn();MODE={k:'own',si,z:ZONES[si],sc:0,med:0,t:0,lim:90,retry:()=>startOwn(si)};pop('OWN THE SPOT','var(--ac)');toast(SPOTS[si][0]+': 90 s. Combos you land inside the spot count')}
+onEv('combo',e=>{const M=MODE;if(!M||M.k!=='own'||M.done)return;if(!inR(e,M.z)){toast('Outside the spot: not counted','#ff5a6a');return}M.sc+=e.v;const m=medOf(M.sc,OWNT);if(m>M.med){M.med=m;pop(MED[m].toUpperCase()+' MEDAL',MEDC[m])}});
+function ownEnd(){const M=MODE,sc=Math.round(M.sc),L=PFL.own[M.si]||(PFL.own[M.si]=[]),k='own'+M.si,o=PFL.med[k]||0;M.done=true;M.rt=5;L.push(sc);L.sort((a,b)=>b-a);L.length=Math.min(5,L.length);
+ if(M.med>o){PFL.med[k]=M.med;for(let m=o+1;m<=M.med;m++)award(MEDB[m],MED[m]+' · Own the Spot')}
+ M.res=sc.toLocaleString()+' pts · '+MED[M.med]+(L[0]===sc&&sc>0?' · spot record':' · record '+L[0].toLocaleString())+' · R to go again';pop(M.med?MED[M.med].toUpperCase():'TIME',M.med?MEDC[M.med]:'#ff5a6a');saveProf()}
+
+// ---------- Game of S.K.A.T.E. on the lower quad: the setter lands a flip or a spin on the flat, the other gets one try to match it or takes a letter ----------
+const SKS=[25,216,0],SKZ=[-72,204,72,335],SKW='SKATE',SKF=[['j',0],['k',0],['l',0],['l',1],['jl',0],['kl',0],['i',0],['ij',0],['ik',0],['jl',1]],SKK={j:'J',k:'K',l:'L',i:'I',jl:'J+L',kl:'K+L',ij:'I+J',ik:'I+K'};
+const skOdds=d=>clamp(.92-d*.2,.15,.92);
+// a CPU trick, named by the game's own namer so the strings match yours exactly
+function sk8Trick(){for(;;){const r=Math.random(),n=r<.55?0:r<.9?(Math.random()<.5?1:-1):(Math.random()<.5?2:-2),pk=Math.random()<.85?SKF[Math.random()*SKF.length|0]:null,gr=Math.random()<.2?GRABS[Math.random()<.5?'b':'f']['']:null;
+  if(!pk&&!n)continue;const st=['','','','Fakie','Nollie'][Math.random()*5|0],f=pk&&{b:FLIPS[pk[0]],keys:pk[0],n:1,sh:pk[1],late:false,cg:false};
+  const a={pop:'Ollie',st,vt:false,ts:1,fl:f?[{n:flipName(f),p:flipPts(f)}]:[],gr,gp:gr?200:0,tw:false,bv:0},q=airName(a,n);
+  return{sig:q.n,p:skOdds(q.p/500+Math.abs(n)*.6+(gr?.3:0)),st,n,fk:pk&&pk[0],sh:pk&&pk[1],gr,side:n?(n>0?'BS':'FS'):''}}}
+function sk8How(t){if(!t.st&&t.n==null)return'';const s=[];if(t.st==='Fakie')s.push('roll fakie');if(t.st==='Nollie')s.push('Q');if(t.n)s.push(Math.abs(t.n)*180+' '+((t.side==='BS')===(stanceSign()>0)?'A':'D'));
+ if(t.fk)s.push(SKK[t.fk]+(t.sh?', L again':''));if(t.gr)s.push(t.gr.h==='b'?'U':'O');return s.join(' · ')}
+const skName=(M,i)=>M.two?'P'+(i+1):i?'Rival':'You',skLet=n=>SKW.split('').map((c,j)=>j<n?c:'·').join('');
+function startSkate(two){endMode(1);MODE={k:'skate',two:!!two,L:[0,0],set:0,act:0,ph:'set',tgt:null,w:0,rs:0,t:0,retry:()=>{const M=MODE;if(M&&M.done)startSkate(M.two);else respawnAt(...SKS)}};spot=7;clearMarker();respawnAt(...SKS);
+ pop('S.K.A.T.E.','var(--ac)');toast(two?'P1 sets first. Pass the keys each turn':'You set first: land a flip or a spin on the flat')}
+function sk8Turn(M,rs){if(rs)M.rs=Math.max(M.rs,1);if(M.done)return;if(M.two)HOOD.color.setHex(M.act?0xe8455f:shopIt('hood')[2]);else if(M.act===1)M.w=1.6}
+function sk8Letter(M,i){M.L[i]++;pop(skName(M,i).toUpperCase()+': '+SKW.slice(0,M.L[i]).split('').join('.'),'#ff5a6a');if(M.L[i]>=5)sk8End(M,1-i)}
+function sk8End(M,w){M.done=true;M.rt=6;if(!M.two){if(w===0){PFL.skate.w++;award(1e4,'S.K.A.T.E. win')}else{PFL.skate.l++;award(1000,'S.K.A.T.E.')}}else award(2000,'S.K.A.T.E.');
+ M.res=skName(M,w)+' win'+(M.two||w===0?'':'s')+' · '+skName(M,0)+' '+skLet(M.L[0])+' · '+skName(M,1)+' '+skLet(M.L[1]);pop(M.two?skName(M,w).toUpperCase()+' WINS':w?'RIVAL WINS':'YOU WIN',w&&!M.two?'#ff5a6a':'var(--ac)');HOOD.color.setHex(shopIt('hood')[2]);saveProf()}
+const skHuman=M=>M&&M.k==='skate'&&!M.done&&!M.w&&(M.two||M.act===0);
+onEv('land',e=>{const M=MODE;if(!skHuman(M)||!e.flat||!e.pop||!inR(e,SKZ))return;   // an attempt is a popped air landed on the flat
+ if(M.ph==='set'){if(!e.fl&&!e.n){pop('Set a flip or a spin','var(--ac2)');return}M.tgt={sig:e.sig,p:skOdds(e.pts/500+Math.abs(e.n)*.6+(e.gr?.3:0))};pop('SET: '+e.sig,'var(--ac2)');M.ph='match';M.act=1-M.act}
+ else{if(e.sig===M.tgt.sig)pop('MATCHED','var(--ac2)');else sk8Letter(M,M.act);M.ph='set';M.act=M.set}sk8Turn(M,1)});
+onEv('bail',()=>{const M=MODE;if(!skHuman(M)||!inR(P,SKZ))return;if(M.ph==='set'){pop(skName(M,M.act).toUpperCase()+' MISSED','#ff5a6a');M.set=M.act=1-M.set}else{sk8Letter(M,M.act);M.ph='set';M.act=M.set}sk8Turn(M,1)});
+// the CPU: sets a trick weighted toward what it can land, or tries to match yours
+function sk8Cpu(M){if(M.ph==='set'){let t=sk8Trick();for(let k=0;k<2;k++){const u=sk8Trick();if(u.p>t.p&&Math.random()<.5)t=u}
+  if(Math.random()<t.p){M.tgt=t;pop('RIVAL SETS: '+t.sig,'var(--ac2)');M.ph='match';M.act=0}else{toast('Rival missed a '+t.sig);M.set=M.act=0}}
+ else{if(Math.random()<M.tgt.p)toast('Rival matched it','var(--ac2)');else{toast('Rival missed it','var(--ac2)');sk8Letter(M,1)}M.ph='set';M.act=M.set}}
+
+// ---------- races: gated downhills against your best splits and a ghost of your best run; deathraces by any route against three rivals ----------
+const RACES=[{id:'hill',n:'College Hill Race',d:'From the top of the hill through 7 gates to the lower quad.',st:[0,-276,0]},
+ {id:'ridge',n:'Ridge Road Race',d:'Off the summit and down Ridge Road to Market Street, through every gate. Traffic below the closed section.',st:[360,-1326,-.19]},
+ {id:'dr1',n:'Deathrace: Library to Reservoir',d:'Any route to the reservoir floor against three rivals. A bail costs you the walk back.',st:[0,-414,0],dr:1,fe:[-130,360],fin:()=>dip(P.x,P.z)>RES.d*.8&&Math.hypot(P.x-RES.x,P.z-RES.z)<20},
+ {id:'dr2',n:'Deathrace: Summit to Southside',d:'The whole map: off the Ridge summit to the floor of the Southside combi pool.',st:[360,-1326,-.19],dr:1,fe:[660,716],fin:()=>poolDip(P.x,P.z)>1.6&&Math.hypot(P.x-660,P.z-716)<16}];
+function raceSetup(){RACES[0].g=[-216,-156,-96,-36,24,84,144,210].map(z=>[-13,z,13,z]);
+ const R0=ROADS[0],P0=R0.p,ie=P0.findIndex(q=>q.z>215),w=R0.hw+4,gate=q=>[q.x+q.dz*w,q.z-q.dx*w,q.x-q.dz*w,q.z+q.dx*w];RACES[1].g=[];for(let i=45;i<ie-25;i+=50)RACES[1].g.push(gate(P0[i]));RACES[1].g.push(gate(P0[ie]));
+ const rt=a=>a.map(([x,z])=>({x,z}));RACES[2].rt=[rt([[0,-414],[0,-380],[-60,-318],[-124,-316],[-130,-296],[-130,330],[-130,362]]),rt([[0,-414],[0,-380],[0,-276],[0,212],[-20,250],[-70,310],[-110,345],[-130,362]]),rt([[0,-414],[25,-395],[40,-262],[40,200],[30,240],[-60,312],[-130,362]])];
+ const rr=[];for(const q of P0){rr.push([q.x,q.z]);if(q.x>=716)break}rr.push([720,560],[720,690],[684,716],[660,716]);const sh=o=>rt(rr.map(([x,z],i)=>[x+(i>2&&i<rr.length-3?o:0),z]));RACES[3].rt=[sh(0),sh(2.5),sh(-2.5)];
+ {const q=P0[Math.floor(P0.findIndex(q=>q.z>-470)*.55)],c={x:q.x+q.dx*40,z:q.z+q.dz*40};GAPS.push({n:'Ridge Road Gap',h:'Ridge Road',f:[q.x-5,q.z-5,q.x+5,q.z+5],t:[c.x-22,c.z-22,c.x+22,c.z+22],p:1500})}}   // the big road gap's kicker (see ridge())
+const GHZ=15,GQ=56,GCAP=GHZ*600,GHOSTS={},PCYL=new T.CylinderGeometry(1,1,1,8),GJ=J.map(()=>new T.Vector3()),RVM=[];let RG=null,GHG=null,GRIG=null,GBD=null;
+function startRace(i){endMode(1);const r=RACES[i];spot=nearSpot(r.st[0],r.st[1]);clearMarker();respawnAt(...r.st);
+ MODE={k:'race',i,r,t:0,cd:3,cs:4,next:0,sp:[],px:P.x,pz:P.z,gn:0,gp:new Int32Array(GCAP*3),gq:new Int16Array(GCAP*GQ),gb:ghostLoad(r.id),retry:()=>startRace(i),
+  rv:r.dr?r.rt.map((rt,k)=>({rt,i:0,d:0,v:0,vm:[21,24.5,28][k],x:rt[0].x,z:rt[0].z,y:base(rt[0].x,rt[0].z),h:0,fin:0})):[]};raceShow(r);toast(r.d)}
+function segX(ax,az,bx,bz,g){const [cx,cz,dx,dz]=g,r1=(bx-ax)*(cz-az)-(bz-az)*(cx-ax),r2=(bx-ax)*(dz-az)-(bz-az)*(dx-ax),r3=(dx-cx)*(az-cz)-(dz-cz)*(ax-cx),r4=(dx-cx)*(bz-cz)-(dz-cz)*(bx-cx);return r1*r2<=0&&r3*r4<=0&&(ax!==bx||az!==bz)}
+function raceStep(M,dt){if(M.cd>0){M.cd-=dt;const s=M.r.st;if(P.mode==='ride'){P.x=s[0];P.z=s[1];P.y=topAt(s[0],s[1]);P.head=s[2];P.spd=0}const c=Math.max(0,Math.ceil(M.cd));if(c!==M.cs){M.cs=c;pop(c?c+'':'GO!',c?'var(--fg)':'var(--ac2)')}if(M.cd<=0){M.cd=0;M.px=P.x;M.pz=P.z}return}
+ M.t+=dt;const rg=P.mode==='rag',x=rg?RP[8].x:P.x,z=rg?RP[8].z:P.z;
+ if(M.r.dr){rivalStep(M,dt);if(M.r.fin())raceFin(M)}
+ else{const g=M.r.g;for(let k=M.next;k<g.length&&k<M.next+4;k++){if(!segX(M.px,M.pz,x,z,g[k]))continue;const miss=k-M.next,b=PFL.races[M.r.id];if(miss){M.t+=miss*5;toast(miss+' gate'+(miss>1?'s':'')+' missed: +'+miss*5+' s','#ff5a6a')}M.sp[k]=M.t;M.next=k+1;
+   if(k===g.length-1){raceFin(M);break}if(b&&b.sp&&b.sp[k]!=null){const d=M.t-b.sp[k];pop((d<0?'−':'+')+Math.abs(d).toFixed(2),d<0?'#5fe36a':'#ff5a6a')}else pop('GATE '+(k+1)+' · '+fmtT(M.t,1),'var(--ac2)');break}}
+ M.px=x;M.pz=z}
+// rivals: each follows its route at a speed the slope gives it (v = sqrt(v² + 2·g·Δh·.6), pushing on the flat, a top speed each)
+function rivalStep(M,dt){for(const v of M.rv){if(v.fin)continue;const rt=v.rt;let a=rt[v.i],b=rt[v.i+1],sl=Math.hypot(b.x-a.x,b.z-a.z);v.d+=v.v*dt;
+  while(v.d>=sl){v.d-=sl;v.i++;a=rt[v.i];b=rt[v.i+1];if(!b){v.fin=M.t;break}sl=Math.hypot(b.x-a.x,b.z-a.z)}
+  if(b){const t=v.d/(sl||1);v.x=a.x+(b.x-a.x)*t;v.z=a.z+(b.z-a.z)*t;v.h=Math.atan2(b.x-a.x,b.z-a.z)}else{v.x=a.x;v.z=a.z}
+  const y=base(v.x,v.z);v.v=Math.min(v.vm,Math.sqrt(Math.max(30,v.v*v.v+2*9.8*(v.y-y)*.6)));v.y=y}}
+function raceFin(M){const r=M.r,b=PFL.races[r.id],t=M.t,pb=!b||t<b.t,pl=r.dr?1+M.rv.filter(v=>v.fin&&v.fin<t).length:0;M.done=true;M.rt=6;
+ if(pb){PFL.races[r.id]={t,sp:M.sp.slice()};ghostSave(r.id,M)}
+ M.res=(pl?ORD[pl]+' · ':'')+fmtT(t)+(pb?' · new best':' · best '+fmtT(b.t))+' · R to race again';pop(pl?ORD[pl].toUpperCase():'FINISH '+fmtT(t),pb||pl===1?'#5fe36a':'var(--fg)');
+ award(pl?[0,1e4,5e3,2500,1000][pl]:2000,r.n);if(pb&&b)award(3000,'personal best');saveProf()}
+function bannerTex(t,c){const cv=document.createElement('canvas');cv.width=512;cv.height=64;const g=cv.getContext('2d');g.fillStyle=c;g.fillRect(0,0,512,64);g.fillStyle='#101215';g.fillRect(0,0,512,5);g.fillRect(0,59,512,5);g.font='38px '+GF;g.textAlign='center';g.textBaseline='middle';g.fillText(t,256,35);
+ const x=new T.CanvasTexture(cv);x.encoding=T.sRGBEncoding;x.wrapS=T.RepeatWrapping;return x}
+function raceShow(r){raceClean();RG=new T.Group();scene.add(RG);const pm=new T.MeshStandardMaterial({color:0xe9e4d8,roughness:.6}),fm=new T.MeshBasicMaterial({color:0xffb21f,transparent:true,opacity:.25,blending:T.AdditiveBlending,depthWrite:false,side:T.DoubleSide});
+ if(r.g){const tc=bannerTex('CHECKPOINT','#ffb21f'),tf=bannerTex('FINISH','#f1efe6');r.g.forEach((g,k)=>{const [x1,z1,x2,z2]=g,b1=topAt(x1,z1),b2=topAt(x2,z2),L=Math.hypot(x2-x1,z2-z1);
+   for(const [x,z,b] of[[x1,z1,b1],[x2,z2,b2]]){const m=new T.Mesh(PCYL,pm);m.scale.set(.12,3.6,.12);m.position.set(x,b+1.8,z);m.castShadow=true;RG.add(m)}
+   const tx=(k===r.g.length-1?tf:tc).clone();tx.needsUpdate=true;tx.repeat.x=Math.max(1,Math.round(L/6));const bn=new T.Mesh(new T.PlaneGeometry(L,.75),new T.MeshBasicMaterial({map:tx,side:T.DoubleSide}));
+   bn.position.set((x1+x2)/2,Math.max(b1,b2)+3.2,(z1+z2)/2);const q=k?r.g[k-1]:null,px=q?(q[0]+q[2])/2:r.st[0],pz=q?(q[1]+q[3])/2:r.st[1];let th=Math.atan2(-(z2-z1),x2-x1);
+   if(Math.sin(th)*(bn.position.x-px)+Math.cos(th)*(bn.position.z-pz)>0)th+=PI;bn.rotation.y=th;RG.add(bn)})}   // the banner's face (and its lettering) toward the rider coming in
+ else{const [x,z]=r.fe,b=new T.Mesh(new T.CylinderGeometry(4,4,60,24,1,true),fm);b.position.set(x,base(x,z)+30,z);RG.add(b)}
+ RVM.forEach(g=>{g.visible=!!r.dr})}
+function raceClean(){if(RG){scene.remove(RG);RG.traverse(m=>{if(m.geometry&&m.geometry!==PCYL)m.geometry.dispose();if(m.material){if(m.material.map)m.material.map.dispose();m.material.dispose()}});RG=null}for(const g of RVM)g.visible=false;if(GHG)GHG.visible=false}
+function rivalBuild(){[0xe8455f,0x7a5cff,0x5fe36a].forEach(c=>{const g=new T.Group(),m=new T.MeshStandardMaterial({color:c,roughness:.7}),lm=new T.MeshStandardMaterial({color:0x2c2f33,roughness:.8}),pt=(geo,mt,y)=>{const o=new T.Mesh(geo,mt);o.position.y=y;o.castShadow=true;g.add(o);return o};
+  pt(new T.CylinderGeometry(.17,.15,.62,10),m,1.16);pt(new T.SphereGeometry(.12,10,8),SKIN,1.62);pt(new T.CylinderGeometry(.13,.09,.82,8),lm,.5);pt(new T.BoxGeometry(.21,.03,.8),M.dark,.07);g.visible=false;scene.add(g);RVM.push(g)})}
+// ghost: your best run's joints and board at 15 Hz (pelvis in cm, the rest in mm off it), drawn as a see-through second rig
+const b64=a=>{let s='';const u=new Uint8Array(a.buffer,a.byteOffset,a.byteLength);for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)};
+const unb64=(s,C)=>{const b=atob(s),u=new Uint8Array(b.length);for(let i=0;i<b.length;i++)u[i]=b.charCodeAt(i);return new C(u.buffer)};
+const c16=v=>v<-32767?-32767:v>32767?32767:Math.round(v),glp=(A,x,y,a)=>A[x]+(A[y]-A[x])*a;
+function ghostRec(M){const n=Math.min(GCAP-1,Math.floor(M.t*GHZ)),p=J[8],b=bd.position,q=bd.quaternion;while(M.gn<=n){const k=M.gn,o=k*GQ;M.gp[k*3]=Math.round(p.x*100);M.gp[k*3+1]=Math.round(p.y*100);M.gp[k*3+2]=Math.round(p.z*100);let j=o;
+  for(let i=0;i<NJ;i++){if(i===8)continue;const v=J[i];M.gq[j++]=c16((v.x-p.x)*1000);M.gq[j++]=c16((v.y-p.y)*1000);M.gq[j++]=c16((v.z-p.z)*1000)}
+  M.gq[o+48]=c16((b.x-p.x)*1000);M.gq[o+49]=c16((b.y-p.y)*1000);M.gq[o+50]=c16((b.z-p.z)*1000);M.gq[o+51]=c16(q.x*32767);M.gq[o+52]=c16(q.y*32767);M.gq[o+53]=c16(q.z*32767);M.gq[o+54]=c16(q.w*32767);M.gq[o+55]=P.mode==='walk'?1:0;M.gn++}}
+function ghostSave(id,M){const n=M.gn;if(n<2)return;const g={n,p:M.gp.slice(0,n*3),q:M.gq.slice(0,n*GQ)};GHOSTS[id]=g;try{localStorage.setItem('cl_ghost_'+id,JSON.stringify({n,p:b64(g.p),q:b64(g.q)}))}catch(e){}}
+function ghostLoad(id){if(GHOSTS[id])return GHOSTS[id];try{const s=JSON.parse(localStorage.getItem('cl_ghost_'+id));if(s&&s.n>1){const g={n:s.n,p:unb64(s.p,Int32Array),q:unb64(s.q,Int16Array)};if(g.p.length>=g.n*3&&g.q.length>=g.n*GQ)return GHOSTS[id]=g}}catch(e){}return null}
+function ghostRig(){GHG=new T.Group();scene.add(GHG);const gm=new T.MeshBasicMaterial({color:0xcfefff,transparent:true,opacity:.32,depthWrite:false}),mk=g=>{const m=new T.Mesh(g,gm);GHG.add(m);return m};
+ GRIG={limb:LIMBS.map(()=>mk(cylG)),ball:BALLS.map(b=>{const m=mk(sphG);m.scale.setScalar(b[1]);return m}),torso:mk(boxG),hips:mk(boxG),cap:mk(cap.geometry)};GRIG.torso.matrixAutoUpdate=GRIG.hips.matrixAutoUpdate=false;GBD=mk(new T.BoxGeometry(.21,.03,.8))}
+function ghostDraw(M){const gb=M&&M.k==='race'&&!M.cd&&!M.done?M.gb:null,f=gb?M.t*GHZ:0;if(!gb||f>=gb.n-1){if(GHG&&GHG.visible)GHG.visible=false;return}if(!GHG)ghostRig();GHG.visible=true;
+ const i=Math.floor(f),a=f-i,p0=i*3,p1=p0+3,o0=i*GQ,o1=o0+GQ,A=gb.q,px=glp(gb.p,p0,p1,a)/100,py=glp(gb.p,p0+1,p1+1,a)/100,pz=glp(gb.p,p0+2,p1+2,a)/100;GJ[8].set(px,py,pz);
+ for(let k=0,j=0;k<NJ;k++){if(k===8)continue;GJ[k].set(px+glp(A,o0+j,o1+j,a)/1000,py+glp(A,o0+j+1,o1+j+1,a)/1000,pz+glp(A,o0+j+2,o1+j+2,a)/1000);j+=3}
+ GBD.position.set(px+glp(A,o0+48,o1+48,a)/1000,py+glp(A,o0+49,o1+49,a)/1000,pz+glp(A,o0+50,o1+50,a)/1000);_q.set(A[o0+51],A[o0+52],A[o0+53],A[o0+54]).normalize();_q2.set(A[o1+51],A[o1+52],A[o1+53],A[o1+54]).normalize();GBD.quaternion.copy(_q).slerp(_q2,a);
+ drawRig(GJ,GRIG,A[o0+55]===1)}
+
+// ---------- object dropper: on foot, N shows a see-through piece 6 m ahead; [ ] piece, Z/X rotate, Enter place, Backspace undo. Saved, and rebuilt with the world ----------
+// r: rotation step in degrees (box colliders are axis-aligned, so those pieces turn in 90s)
+const dq=a=>((Math.round(a/(PI/2))%4)+4)%4;
+function dRail(x,z,a){const ux=Math.sin(a)*4,uz=Math.cos(a)*4,r=rail(x-ux,z-uz,x+ux,z+uz,.4,.4,false,true,'flat');r.k='rail';r.s=true;for(const t of[-.85,0,.85]){const px=x+ux*t,pz=z+uz*t,y=base(px,pz);cyl(new T.Vector3(px,y,pz),new T.Vector3(px,y+.38,pz),.03,M.metal)}}
+function dFunbox(x,z,a){const s=dq(a)&1,L=(u,v)=>s?[x+u,z+v]:[x+v,z+u];box(x,z,s?10:8,s?8:10,1.2,M.concrete);
+ for(const k of[-1,1]){const [rx,rz]=L(k*8,0);ramp(rx,rz,8,6,1.2,s?(k<0?PI/2:-PI/2):(k<0?0:PI),'lin')}
+ {const [x1,z1]=L(-4,0),[x2,z2]=L(4,0),r=rail(x1,z1,x2,z2,1.65,1.65,false,true);r.k='rail';r.s=true;for(const t of[0,1]){const px=t?x2:x1,pz=t?z2:z1,y=base(px,pz)+1.2;cyl(new T.Vector3(px,y,pz),new T.Vector3(px,y+.43,pz),.035,M.metal)}}
+ for(const k of[-4,4]){const [x1,z1]=L(-5,k),[x2,z2]=L(5,k);rail(x1,z1,x2,z2,1.2,1.2,false,false)}}
+function dPad(x,z,a){const s=dq(a)&1;box(x,z,s?8:3,s?3:8,.3,M.concrete);for(const k of[-1.45,1.45])s?rail(x-4,z+k,x+4,z+k,.3,.3,false,false):rail(x+k,z-4,x+k,z+4,.3,.3,false,false)}
+const DROPS=[{n:'Kicker',r:15,f:(x,z,a)=>kicker(x,z,a,1.3,3.5,4)},{n:'Big Kicker',r:15,f:(x,z,a)=>ramp(x,z,5,5,2,a,'kick',M.wood)},{n:'Quarter Pipe',r:90,f:(x,z,a)=>qp(x,z,8,2.4,dq(a)*PI/2,M.wood)},
+ {n:'Ledge',r:90,f:(x,z,a)=>ledge(x,z,8,(dq(a)&1)===1,.5)},{n:'Flat Rail',r:15,f:dRail},{n:'Funbox',r:90,f:dFunbox,dd:13},{n:'Pyramid',r:90,f:(x,z)=>pyramid(x,z),dd:9.5},{n:'Manual Pad',r:90,f:dPad}];
+const DROP={on:false,d:0,a:0,pv:null,pk:''},dropAt=()=>{const d=DROPS[DROP.d].dd||6;return[Math.round((P.x+Math.sin(P.head)*d)*2)/2,Math.round((P.z+Math.cos(P.head)*d)*2)/2]},DROPL=[],GHOSTM=new T.MeshBasicMaterial({color:0x3fd0c9,transparent:true,opacity:.38,depthWrite:false});
+// build a piece into its own group; DCAP collects every collider it registers so it can be taken out again
+function dropBuild(d,x,z,a){const g0=G,grp=new T.Group(),cap=[],n0=[W.rails.length,W.lips.length,W.mm.length,WAXL.length];G=grp;DCAP=cap;try{DROPS[d].f(x,z,a)}finally{G=g0;DCAP=null}WAXL.length=n0[3];
+ return{grp,cap,n0,n1:[W.rails.length,W.lips.length,W.mm.length],d,x,z,a}}
+function dropStrip(o){for(const [m,k,v] of o.cap){const L=m.get(k);if(L){const i=L.lastIndexOf(v);if(i>=0)L.splice(i,1)}}o.cap.length=0;W.rails.splice(o.n0[0],o.n1[0]-o.n0[0]);W.lips.splice(o.n0[1],o.n1[1]-o.n0[1]);W.mm.splice(o.n0[2],o.n1[2]-o.n0[2]);SOLN=-1}
+function dropKill(o){if(o.grp.parent)o.grp.parent.remove(o.grp);o.grp.traverse(m=>{if(m.geometry)m.geometry.dispose()})}
+function dropToggle(){if(P.mode!=='walk'||P.upT<UPT){pop(P.mode==='ride'?'Step off first (E), then N':'Get up first','var(--ac2)');return}DROP.on=!DROP.on;if(DROP.on){DROP.a=P.head;pop('Dropper: '+DROPS[DROP.d].n,'var(--ac2)')}}
+function dropKey(k){if(k==='['||k===']'){DROP.d=(DROP.d+(k===']'?1:DROPS.length-1))%DROPS.length;pop(DROPS[DROP.d].n,'var(--ac2)');return true}
+ if(k==='z'||k==='x'){DROP.a+=(k==='z'?1:-1)*DROPS[DROP.d].r*PI/180;return true}if(k==='enter'){dropPlace();return true}if(k==='bk'){dropUndo();return true}return false}
+function dropPlace(){const [x,z]=dropAt();if(DROPL.length>=40){pop('40 pieces max: Backspace undoes','#ff5a6a');return false}if(outW(x,z)||dip(x,z)>0||poolDip(x,z)>0||topAt(x,z)-base(x,z)>.3){pop('Can\'t build there','#ff5a6a');return false}   // not in water, a pool or on top of something
+ const o=dropBuild(DROP.d,x,z,DROP.a);G.add(o.grp);DROPL.push(o);PFL.drops.push({d:DROP.d,x,z,a:+DROP.a.toFixed(4)});drawMiniBase();saveProf();sfx.knock(3);pop(DROPS[DROP.d].n+' placed','var(--ac2)');P.y=topAt(P.x,P.z);return true}   // standing where it went: on top of it, not stuck inside
+function dropUndo(){const o=DROPL.pop();if(!o){pop('Nothing to undo','var(--ac2)');return}dropStrip(o);dropKill(o);PFL.drops.pop();drawMiniBase();saveProf();P.y=topAt(P.x,P.z);pop('Undone','var(--ac2)')}
+function dropClear(){while(DROPL.length){const o=DROPL.pop();dropStrip(o);dropKill(o)}PFL.drops=[];drawMiniBase();saveProf();if(P.mode==='walk')P.y=topAt(P.x,P.z)}
+function dropsLoad(){for(const s of PFL.drops)if(s&&DROPS[s.d]&&isFinite(s.x)&&isFinite(s.z)&&!outW(s.x,s.z)){const o=dropBuild(s.d,s.x,s.z,+s.a||0);G.add(o.grp);DROPL.push(o)}}
+// the preview: built once per piece and angle (its colliders taken straight out again), then slid along with you
+function dropFrame(){const on=DROP.on&&P.mode==='walk';if(!on){if(DROP.pv){dropKill(DROP.pv);DROP.pv=null}if(DROP.on&&P.mode!=='walk')DROP.on=false;return}
+ const [x,z]=dropAt(),key=DROP.d+':'+(DROPS[DROP.d].r===90?dq(DROP.a):DROP.a.toFixed(3));
+ if(!DROP.pv||DROP.pk!==key){if(DROP.pv)dropKill(DROP.pv);const o=dropBuild(DROP.d,x,z,DROP.a);dropStrip(o);o.grp.traverse(m=>{if(m.isMesh){m.material=GHOSTM;m.castShadow=m.receiveShadow=false}});scene.add(o.grp);DROP.pv=o;DROP.pk=key}
+ const o=DROP.pv;o.grp.position.set(x-o.x,base(x,z)-base(o.x,o.z),z-o.z)}
+
+// ---------- the mode tick (every physics step, in every rider mode), the frame part, keys, HUD and minimap ----------
+function modeStep(dt){if(P.mode==='ride'&&P.ground)PFL.km+=Math.abs(P.spd)*dt*.001;const M=MODE;if(!M)return;
+ if(M.done){if((M.rt-=dt)<=0)endMode(1);return}
+ if(M.k==='race'){raceStep(M,dt);return}M.t+=dt;
+ if(M.k==='chal'){if(M.c.ev==='tick')chalEv('tick',dt);if(MODE===M&&!M.done&&M.t>=M.lim)chalEnd()}
+ else if(M.k==='own'){if(M.t>=M.lim){if(P.mode==='ride')endCombo();ownEnd()}}
+ else if(M.k==='skate'){if(M.w>0&&(M.w-=dt)<=0){M.w=0;sk8Cpu(M);sk8Turn(M)}if(M.rs>0&&(M.rs-=dt)<=0){if(P.mode==='rag'||P.mode==='walk'&&P.upT<UPT)M.rs=.2;else{M.rs=0;respawnAt(...SKS)}}}}
+function modeFrame(dt){const M=MODE;if(M&&M.k==='race'){if(!M.cd&&!M.done)ghostRec(M);if(M.r.dr)M.rv.forEach((v,k)=>{const g=RVM[k];g.position.set(v.x,v.y,v.z);g.rotation.set(0,v.h,Math.sin(clk*3+k)*.05)})}
+ ghostDraw(M);const o=.17+.07*Math.sin(clk*2.6),cp=cam.position;for(const c of CHM){const d=Math.hypot(c.b.position.x-cp.x,c.b.position.z-cp.z);c.b.visible=d>3;c.b.material.opacity=o*clamp((d-3)/12,0,1)}dropFrame()}   // challenge beams fade out as the camera reaches them
+function modeKey(k){if(MODE&&!MODE.done&&(k==='1'&&MODE.k==='chal'||k==='2'&&MODE.k==='own'||k==='3'&&MODE.k==='skate'||(k==='4'||k==='5')&&MODE.k==='race')){endMode();return}
+ if(k==='1'){const i=nearChal();if(i<0){pop('Ride to an amber marker · M lists the challenges','var(--ac2)');return}startChal(i)}
+ else if(k==='2'){const i=ZONES.findIndex(z=>inR(P,z));startOwn(i>=0?i:spot)}
+ else if(k==='3')startSkate(false);
+ else{const dr=k==='5';let b=-1,d=1e9;RACES.forEach((r,i)=>{if(!!r.dr!==dr)return;const e=Math.hypot(P.x-r.st[0],P.z-r.st[1]);if(e<d){d=e;b=i}});startRace(b)}}
+const MHD={t:'',s:''};
+function modeHud(){for(let i=0;i<CHM.length;i++){const c=CHAL[i].at,v=Math.abs(c[0]-P.x)+Math.abs(c[1]-P.z)<260;if(CHM[i].sp.visible!==v)CHM[i].sp.visible=v}
+ const M=MODE,e=$('mode');if(!M){if(!e.hidden)e.hidden=true;MHD.t=MHD.s='';return}let t,s;const left=x=>fmtT(Math.max(0,Math.ceil(x)),0);
+ if(M.k==='chal'){const c=M.c;t=c.n+(M.done?'':' · '+left(M.lim-M.t));s=M.done?M.res:(M.best?'Best '+fmtV(M.best,c.u)+' · ':'')+(M.med<3?MED[M.med+1]+' at '+fmtV(c.tg[M.med],c.u):'')+' · R retry · 1 quits'}
+ else if(M.k==='own'){t='Own the Spot: '+SPOTS[M.si][0]+(M.done?'':' · '+left(M.lim-M.t));s=M.done?M.res:Math.round(M.sc).toLocaleString()+' pts'+(M.med<3?' · '+MED[M.med+1]+' at '+OWNT[M.med].toLocaleString():' · Legend')+(inR(P,M.z)?'':' · outside the spot!')}
+ else if(M.k==='skate'){t='S.K.A.T.E. · '+skName(M,0)+' '+skLet(M.L[0])+'  ·  '+skName(M,1)+' '+skLet(M.L[1]);const nm=skName(M,M.act);
+  s=M.done?M.res:M.w?'Rival is up…':M.ph==='set'?(M.two?nm+' sets':'Your set')+': land a flip or a spin on the flat':(M.two?nm+' matches: ':'Match it: ')+M.tgt.sig+(M.tgt.st!=null?' ('+sk8How(M.tgt)+')':'')}
+ else{const r=M.r;t=r.n+' · '+(M.cd?'ready':fmtT(M.t,1));if(M.done)s=M.res;else if(r.dr){const n=M.rv.filter(v=>v.fin).length;s=(n?n+' of 3 rivals in':'Any route to the beam')+(M.gb?' · ghost: your best':'')+' · R restarts'}
+  else{const b=PFL.races[r.id];s='Gate '+Math.min(M.next+1,r.g.length)+' / '+r.g.length+(b?' · best '+fmtT(b.t):'')+(M.gb?' · ghost on':'')+' · R restarts'}}
+ if(t!==MHD.t){MHD.t=t;$('modeT').textContent=t}if(s!==MHD.s){MHD.s=s;$('modeS').textContent=s}if(e.hidden)e.hidden=false}
+// minimap: challenge markers (medal colours), the race gates and the rivals
+function modeMini(tp){for(let i=0;i<CHAL.length;i++){const [a,b]=tp(CHAL[i].at[0],CHAL[i].at[1]);if(a<-4||a>204||b<-4||b>204)continue;mg.fillStyle=MEDC[PFL.med[CHAL[i].id]||0];mg.fillRect(a-3,b-3,6,6);mg.strokeStyle='#101215';mg.lineWidth=1;mg.strokeRect(a-3,b-3,6,6)}
+ const M=MODE;if(M&&M.k==='own'){const z=M.z,[a,b]=tp(z[0],z[1]),[c,d]=tp(z[2],z[3]);mg.strokeStyle='#ffb21f';mg.lineWidth=2;mg.strokeRect(a,b,c-a,d-b)}   // the spot you're owning
+ if(!M||M.k!=='race')return;if(M.r.g){mg.lineWidth=2.5;M.r.g.forEach((g,k)=>{if(k<M.next)return;const [a,b]=tp(g[0],g[1]),[c,d]=tp(g[2],g[3]);mg.strokeStyle=k===M.next?'#3fd0c9':'#ffb21f';mg.beginPath();mg.moveTo(a,b);mg.lineTo(c,d);mg.stroke()})}
+ else{const [a,b]=tp(M.r.fe[0],M.r.fe[1]);mg.strokeStyle='#ffb21f';mg.lineWidth=2;mg.beginPath();mg.arc(clamp(a,4,196),clamp(b,4,196),5,0,7);mg.stroke()}
+ M.rv.forEach((v,k)=>{const [a,b]=tp(v.x,v.z);mg.fillStyle=['#e8455f','#7a5cff','#5fe36a'][k];mg.beginPath();mg.arc(clamp(a,3,197),clamp(b,3,197),3,0,7);mg.fill()})}
+
+// ---------- menu: modes, challenges, the spot book, career stats and the shop ----------
+const mk=(tag,cls,txt)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(txt!=null)e.textContent=txt;return e};
+let DTH=null;   // deck thumbnails
+function menuSync(){const t=title(),nx=TITLES[TITLES.indexOf(t)+1];$('progT').textContent=t[1]+' · '+PFL.sales.toLocaleString()+' boards sold'+(nx?' · '+(nx[0]-PFL.sales).toLocaleString()+' to '+nx[1]:'');$('progB').style.transform='scaleX('+(nx?clamp((PFL.sales-t[0])/(nx[0]-t[0]),0,1):1)+')';
+ $('mOwn').innerHTML='Own the Spot: <b></b>';$('mOwn').lastChild.textContent=SPOTS[spot][0]+(PFL.own[spot]&&PFL.own[spot][0]?' · '+PFL.own[spot][0].toLocaleString():'');
+ $('mQuit').hidden=!MODE;$('mClr').lastChild.textContent=DROPL.length;
+ const rc=$('races');rc.textContent='';RACES.forEach((r,i)=>{const b=mk('button','card');b.append(mk('b','',r.n),mk('i','',r.d));const p=PFL.races[r.id];b.append(mk('i','md',p?'Best '+fmtT(p.t)+(ghostLoad(r.id)?' · ghost saved':''):'Not raced yet'));b.onclick=()=>{toggleMenu(false);startRace(i)};rc.append(b)});
+ const ch=$('chals');ch.textContent='';CHAL.forEach((c,i)=>{const b=mk('button','card'),m=PFL.med[c.id]||0,md=mk('i','md');b.append(mk('b','',c.n),mk('i','',c.d));
+  for(let k=1;k<4;k++){const s=mk('span','',MED[k]+' '+fmtV(c.tg[k-1],c.u));s.style.color=m>=k?MEDC[k]:'';if(m>=k)s.style.fontWeight=600;md.append(s,k<3?' · ':'')}
+  if(PFL.cb[c.id])md.append(mk('span','',' · best '+fmtV(PFL.cb[c.id],c.u)));b.append(md);b.onclick=()=>{toggleMenu(false);startChal(i)};ch.append(b)});
+ const bk=$('book');bk.textContent='';for(const g of GAPS){const b=PFL.book[g.n],d=mk('div','card st');if(b){const ts=Object.keys(b.t);d.append(mk('b','',g.n),mk('i','',b.c+' clear'+(b.c>1?'s':'')+' · '+ts.length+' NBD'+(ts.length>1?'s':'')),mk('i','md',ts.slice(-5).join(' · ')))}
+  else d.append(mk('b','','???'),mk('i','','Undiscovered gap · '+g.h));bk.append(d)}
+ const nb=Object.values(PFL.book).reduce((s,b)=>s+Object.keys(b.t).length,0),mc=CHAL.reduce((s,c)=>s+(PFL.med[c.id]||0),0),st=$('stats');st.textContent='';
+ for(const [k,v] of[['Score',total.toLocaleString()],['Top speed',Math.max(PFL.topKmh,best)+' km/h'],['Best combo',PFL.bestCombo.toLocaleString()],['Longest grind',PFL.longGrind.toFixed(1)+' m'],['Distance',PFL.km.toFixed(2)+' km'],['Bails',PFL.bails],
+  ['Boards sold',PFL.sales.toLocaleString()],['Medals',mc+' / '+CHAL.length*3],['Gaps',Object.keys(PFL.book).length+' / '+GAPS.length],['NBDs',nb],['S.K.A.T.E.',PFL.skate.w+' W · '+PFL.skate.l+' L'],['Deck wear',Math.round(Math.min(400,PFL.wear)/4)+'%']]){const d=mk('div');d.append(mk('b','',v),k);st.append(d)}
+ if(!DTH){DTH=DPAINT.map(f=>{const c=document.createElement('canvas');c.width=128;c.height=384;f(c.getContext('2d'));return c.toDataURL()})}
+ const sh=$('shop');sh.textContent='';for(const s of SHOP){const row=mk('div','slot');row.append(mk('span','',s.n));s.it.forEach((it,i)=>{const b=mk('button','sw'+(s.k==='deck'?' dk':'')),lk=it[1]>PFL.sales;b.setAttribute('aria-pressed',(PFL.load[s.k]|0)===i);b.setAttribute('aria-label',s.n+': '+it[0]+(lk?', locked':''));
+  b.title=it[0]+(lk?' · unlocks at '+it[1].toLocaleString()+' boards':'');if(lk)b.setAttribute('aria-disabled','true');if(s.k==='deck')b.style.backgroundImage='url('+DTH[i]+')';else b.style.background='#'+it[2].toString(16).padStart(6,'0');
+  b.onclick=()=>{if(equip(s.k,i))menuSync()};row.append(b)});sh.append(row)}}
+function modesInit(){raceSetup();chalBuild();rivalBuild();applyLoad();$('best').textContent=best;
+ $('mOwn').onclick=()=>{toggleMenu(false);startOwn(spot)};$('mSk1').onclick=()=>{toggleMenu(false);startSkate(false)};$('mSk2').onclick=()=>{toggleMenu(false);startSkate(true)};
+ $('mQuit').onclick=()=>{endMode();menuSync()};$('mClr').onclick=()=>{dropClear();menuSync()};
+ if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>{CHAL.forEach((c,i)=>chalMark(i));applyLoad();DTH=null}).catch(()=>{});menuSync()}   // the menu is up at load
+function modeHint(t){if(DROP.on&&P.mode==='walk')return'Dropper: '+DROPS[DROP.d].n+' · [ ] piece · Z/X rotate · Enter place · Backspace undo · N closes';if(t||MODE||P.mode==='rag')return t;const i=nearChal();return i<0?'':'1: '+CHAL[i].n+' · '+CHAL[i].d}
+
 // ---------- menu ----------
-const spotsEl=$('spots');SPOTS.forEach((s,i)=>{const b=document.createElement('button');b.className='card';b.id='spot'+i;b.innerHTML=`<b>${s[0]}</b><i>${s[1]}</i>`;b.onclick=()=>{spot=i;clearMarker();respawn();acc=0;toggleMenu(false)};spotsEl.append(b)});
-function toggleMenu(show){if(RPL)replayClose();paused=show;$('menu').hidden=!show;for(const k in K)K[k]=false;for(const k in GPV)GPV[k]=false;P.charging=false;P.fp=null;if(show)$('spot'+spot).focus()}
+const spotsEl=$('spots');SPOTS.forEach((s,i)=>{const b=document.createElement('button');b.className='card';b.id='spot'+i;b.innerHTML=`<b>${s[0]}</b><i>${s[1]}</i>`;b.onclick=()=>{endMode(1);spot=i;clearMarker();respawn();acc=0;toggleMenu(false)};spotsEl.append(b)});
+function toggleMenu(show){if(RPL)replayClose();paused=show;$('menu').hidden=!show;for(const k in K)K[k]=false;for(const k in GPV)GPV[k]=false;P.charging=false;P.fp=null;if(show){menuSync();$('spot'+spot).focus()}}
 $('stance').onclick=()=>setGoofy(!P.goofy);setGoofy(P.goofy);$('snd').onclick=()=>setSnd(!SND);setSnd(SND);
 $('camB').onclick=()=>setCam((camMode+1)%CAMS.length);setCam(camMode);$('blurB').onclick=()=>setBlur(!BLUR);setBlur(BLUR);$('gfxB').onclick=()=>setGfx(!GFX);setGfx(GFX);
-build();photoTextures();skyLight();drawMiniBase();respawn();requestAnimationFrame(frame);
+build();modesInit();photoTextures();skyLight();drawMiniBase();respawn();requestAnimationFrame(frame);
 </script>
 </body></html>
