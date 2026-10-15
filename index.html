@@ -1216,7 +1216,7 @@ const RUNK={trip:1,slip:1,sideways:1,slipout:1,primo:1};   // small mistakes tha
 function bailKind(fp,r,bvA){if(fp<.8){flipQ(P.flip);const uy=_u.set(0,1,0).applyQuaternion(_q).y,fz=_f.set(0,0,1).applyQuaternion(_q).z;return Math.abs(uy)<.45?'primo':uy<-.45?'slipout':Math.abs(fz)<.7?'sideways':'trip'}
  return bvA?'sideways':Math.abs(r)>.6?'slip':'trip'}
 // the pose (J, the board slot) is refreshed by the frame. After a teleport earlier in this frame (a respawn, a marker) it still stands where you were: bring it along
-function poseHere(){const dx=P.x-J[8].x,dz=P.z-J[8].z;if(dx*dx+dz*dz<9)return;const dy=P.y+.9-J[8].y;for(const v of J){v.x+=dx;v.y+=dy;v.z+=dz}sk.position.set(P.x,P.y,P.z);sk.updateMatrixWorld(true)}
+function poseHere(){const dx=P.x-J[8].x,dz=P.z-J[8].z;if(dx*dx+dz*dz<9)return;const dy=P.y+.9-J[8].y;for(const v of J){v.x+=dx;v.y+=dy;v.z+=dz}sk.position.set(P.x,P.y,P.z);sk.quaternion.setFromEuler(_e.set(P.pitch||0,P.head,0,'YXZ'));sk.updateMatrixWorld(true)}   // facing too: the board slot hangs off sk
 function bail(kind='trip',o){if(P.mode!=='ride')return;poseHere();emit('bail',{kind});const g=P.grind,bk=BAILK[kind]||BAILK.trip,c=BC;
  const f=c.f.set(Math.sin(P.head),0,Math.cos(P.head)),side=c.s.set(f.z,0,-f.x)
  ,sn=P.ground?P.sl/Math.sqrt(1+P.sl*P.sl):0,hs=P.ground?P.spd*Math.sqrt(1-sn*sn):P.spd,vy=P.ground?P.spd*sn:P.vy;
